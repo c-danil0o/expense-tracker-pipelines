@@ -5,22 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-public class User {
+public class Reminder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-    @Column(unique = true)
-    private String email;
-    private String firstName;
-    private String lastName;
+    private Long id;
     @Enumerated(EnumType.STRING)
-    private UserType type;
-    private String currency;
-    private double funds;
-    private double reservedFunds;
-
+    private ReminderType type;
+    // Last time reminder was sent to a user
+    private LocalDateTime lastCheck;
 }

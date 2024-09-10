@@ -1,5 +1,6 @@
 package com.example.tracker.service;
 
+import com.example.tracker.exceptions.TransactionGroupAlreadyExists;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.model.TransactionGroup;
 import com.example.tracker.repository.TransactionGroupRepository;
@@ -25,14 +26,14 @@ public class TransactionService {
         return this.transactionRepository.save(transaction);
     }
 
-    public TransactionGroup createGroup(TransactionGroup transactionGroup){
+    public TransactionGroup createGroup(TransactionGroup transactionGroup) throws TransactionGroupAlreadyExists {
         if (transactionGroup.getUserId() == null){
             if (this.transactionGroupRepository.getByName(transactionGroup.getName()) != null){
-                return null;
+                 throw new TransactionGroupAlreadyExists("Group with given name already exists!");
             }
         }else{
             if (this.transactionGroupRepository.getByUserId(transactionGroup.getUserId()).stream().anyMatch(group1 -> group1.getName().equalsIgnoreCase(transactionGroup.getName()))){
-                return null;
+                throw new TransactionGroupAlreadyExists("Group with given name already exists!");
             }
         }
         return this.transactionGroupRepository.save(transactionGroup);

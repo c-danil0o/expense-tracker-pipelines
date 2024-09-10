@@ -1,5 +1,6 @@
 package com.example.tracker.controller;
 
+import com.example.tracker.exceptions.TransactionGroupAlreadyExists;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.model.TransactionGroup;
 import com.example.tracker.service.TransactionService;
@@ -31,8 +32,7 @@ public class TransactionController {
     }
 
     @PostMapping(value = "/group", consumes = "application/json")
-    public ResponseEntity<TransactionGroup> createTransactionGroup(@RequestBody TransactionGroup transactionGroup)
-    {
+    public ResponseEntity<TransactionGroup> createTransactionGroup(@RequestBody TransactionGroup transactionGroup) throws TransactionGroupAlreadyExists {
         this.transactionService.createGroup(transactionGroup);
         return ResponseEntity.ok(transactionGroup);
 

@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -31,6 +34,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             TransactionGroupAlreadyExists ex) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
         apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(ElementNotFoundException.class)
+    protected ResponseEntity<Object> handleElementNotFound(
+            ElementNotFoundException ex) {
+        ApiError apiError = new ApiError(NOT_FOUND);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    protected ResponseEntity<Object> handleSqlIntegrityViolation(
+            SQLIntegrityConstraintViolationException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setMessage("Element already exists or database constraint is violated!");
+        apiError.setDebugMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
 }

@@ -7,24 +7,16 @@ import com.example.tracker.model.TransactionGroup;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
 import com.example.tracker.service.interfaces.TransactionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
-    @Autowired
     private final TransactionRepository transactionRepository;
-
-    @Autowired
     private final TransactionGroupRepository transactionGroupRepository;
-
-    public TransactionServiceImpl(TransactionRepository transactionRepository, TransactionGroupRepository transactionGroupRepository)
-    {
-        this.transactionRepository = transactionRepository;
-        this.transactionGroupRepository = transactionGroupRepository;
-    }
 
 
     public TransactionGroup createGroup(TransactionGroup transactionGroup) throws TransactionGroupAlreadyExists {

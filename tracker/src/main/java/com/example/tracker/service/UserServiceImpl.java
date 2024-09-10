@@ -4,15 +4,15 @@ import com.example.tracker.exceptions.ElementNotFoundException;
 import com.example.tracker.model.User;
 import com.example.tracker.repository.UserRepository;
 import com.example.tracker.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public List<User> findAll() {

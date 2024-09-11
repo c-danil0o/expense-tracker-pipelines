@@ -1,6 +1,5 @@
 package com.example.tracker.exceptions;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.*;
@@ -29,10 +28,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(apiError, apiError.getStatus());
     }
 
-    @ExceptionHandler(TransactionGroupAlreadyExists.class)
+    @ExceptionHandler(TransactionGroupAlreadyExistsException.class)
     protected ResponseEntity<Object> handleGroupAlreadyExists(
-            TransactionGroupAlreadyExists ex) {
+            TransactionGroupAlreadyExistsException ex) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(TransactionGroupNotFoundException.class)
+    protected ResponseEntity<Object> handleGroupNotFound(
+            TransactionGroupNotFoundException ex) {
+        ApiError apiError = new ApiError(NOT_FOUND);
         apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }

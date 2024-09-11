@@ -15,8 +15,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class TransactionMapper {
-    private final UserRepository userRepository;
-    private final TransactionGroupRepository transactionGroupRepository;
 
     public TransactionGroupDTO toTransactionGroupDTO(TransactionGroup transactionGroup) {
         return TransactionGroupDTO.builder().id(transactionGroup.getId()).name(transactionGroup.getName()).
@@ -35,10 +33,7 @@ public class TransactionMapper {
                 .transactionGroupId(transaction.getTransactionGroup().getId()).build();
     }
 
-    public Transaction fromTransactionDTO(TransactionDTO transactionDTO) {
-        User user = this.userRepository.findById(transactionDTO.getUserId()).orElseThrow(() -> new ElementNotFoundException("User with given id doesn't exist!"));
-        TransactionGroup transactionGroup = this.transactionGroupRepository.findById(transactionDTO.getTransactionGroupId())
-                .orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
+    public Transaction fromTransactionDTO(TransactionDTO transactionDTO, User user, TransactionGroup transactionGroup) {
         return Transaction.builder().id(transactionDTO.getId()).user(user).timestamp(transactionDTO.getTimestamp()).
                 type(transactionDTO.getType()).currency(transactionDTO.getCurrency()).amount(transactionDTO.getAmount())
                 .repeatType(transactionDTO.getRepeatType()).transactionGroup(transactionGroup).

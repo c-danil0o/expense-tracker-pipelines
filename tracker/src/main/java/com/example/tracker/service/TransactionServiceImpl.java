@@ -8,9 +8,11 @@ import com.example.tracker.exceptions.TransactionGroupNotFoundException;
 import com.example.tracker.mapper.TransactionMapper;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.model.TransactionGroup;
+import com.example.tracker.model.User;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
 import com.example.tracker.service.interfaces.TransactionService;
+import com.example.tracker.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionGroupRepository transactionGroupRepository;
     private final TransactionMapper transactionMapper;
+    private final UserService userService;
 
 
     public TransactionGroupDTO createGroup(TransactionGroupDTO transactionGroupDTO) throws TransactionGroupAlreadyExistsException {
@@ -55,15 +58,21 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public TransactionDTO save(TransactionDTO transactionDTO) {
-        Transaction savedTransaction = this.transactionRepository.save(this.transactionMapper.fromTransactionDTO(transactionDTO));
+        User user = this.userService.findEntityById(transactionDTO.getUserId());
+        TransactionGroup transactionGroup = this.transactionGroupRepository.findById(transactionDTO.getTransactionGroupId())
+                .orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
+        Transaction savedTransaction = this.transactionRepository.save(this.transactionMapper.fromTransactionDTO(transactionDTO, user, transactionGroup));
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
     @Override
     public TransactionDTO update(TransactionDTO newTransaction) throws ElementNotFoundException {
+        User user = this.userService.findEntityById(newTransaction.getUserId());
+        TransactionGroup transactionGroup = this.transactionGroupRepository.findById(newTransaction.getTransactionGroupId())
+                .orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
         if (!this.transactionRepository.existsById(newTransaction.getId()))
             throw new ElementNotFoundException("Transaction with given id doesn't exist!");
-        Transaction transaction = this.transactionMapper.fromTransactionDTO(newTransaction);
+        Transaction transaction = this.transactionMapper.fromTransactionDTO(newTransaction, user, transactionGroup);
         transaction.setId(newTransaction.getId());
         Transaction savedTransaction = this.transactionRepository.save(transaction);
         return this.transactionMapper.toTransactionDTO(savedTransaction);

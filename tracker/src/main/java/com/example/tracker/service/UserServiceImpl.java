@@ -52,4 +52,9 @@ public class UserServiceImpl implements UserService {
         }
 
     }
+
+    @Override
+    public User findEntityById(Long id) {
+        return this.userRepository.findById(id).orElseThrow(() -> new ElementNotFoundException("No such element with given id!"));
+    }
 }

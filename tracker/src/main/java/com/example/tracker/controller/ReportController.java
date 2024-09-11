@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportController {
     private final ReportService reportService;
 
-    @GetMapping(value = "/report/generate")
-    public ResponseEntity<String> generateReport() {
-        return ResponseEntity.ok(this.reportService.generateReport());
+    @GetMapping(value = "/report/generate/{userId}")
+    public ResponseEntity<String> generateReport(@PathVariable Long userId) {
+        return ResponseEntity.ok(this.reportService.generateReport(userId));
     }
 }

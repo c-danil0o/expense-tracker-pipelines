@@ -1,5 +1,6 @@
 package com.example.tracker.service;
 
+import com.example.tracker.exceptions.ElementNotFoundException;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
@@ -26,7 +27,7 @@ public class ReportServiceImpl implements ReportService {
     private final UserRepository userRepository;
 
     @Override
-    public String generateReport() {
+    public String generateReport(Long userId) {
         HtmlPdfGenerator pdfGenerator = new HtmlPdfGenerator();
 
         Map<String, Object> data = new HashMap<>();
@@ -43,6 +44,9 @@ public class ReportServiceImpl implements ReportService {
         jan.setTransactions(rows);
         months.add(jan);
         data.put("months", months);
+        data.put("user", this.userRepository.findById(userId).orElseThrow(()-> new ElementNotFoundException("User not found!")).getEmail());
+        String htmlData = pdfGenerator.parseReportTemplate(data);
+        pdfGenerator.generatePdfFromHtml(htmlData);
         return pdfGenerator.parseReportTemplate(data);
     }
 }

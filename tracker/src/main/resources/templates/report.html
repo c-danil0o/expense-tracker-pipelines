@@ -1,48 +1,49 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"></meta>
     <title>Expense tracker report</title>
-    <link href="https://fonts.cdnfonts.com/css/poppins" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/poppins" rel="stylesheet"></link>
 
+    <style>
+        body {margin: 20px; font-family: "Poppins", sans-serif;}
+       .header {margin: 20px;}
+       .header-text {text-align: center; color: gray;}
+       .month {padding: 20px;}
+       table {
+       border-collapse: collapse;
+       font-family: Tahoma, Geneva, sans-serif;
+       width: 98%;
+       margin: 10px auto;
+           -fs-table-paginate: paginate;
+        border-spacing: 0;
+    }
+    table td {
+       padding: 15px;
+    }
+    table th{
+       padding: 10px;
+       color: darkblue;
+
+    }
+    table thead td {
+       background-color: #54585d;
+       color: darkgrey;
+       font-weight: bold;
+       font-size: 13px;
+       border: 1px solid #54585d;
+    }
+    table tbody td {
+       color: #636363;
+    }
+    table tbody tr {
+       background-color: #f9fafb;
+    }
+    table tbody tr:nth-child(odd) {
+       background-color: #ffffff;
+    }
+    </style>
 </head>
-<style>
-    body {margin: 20px; font-family: "Poppins", sans-serif;}
-   .header {margin: 20px;}
-   .header-text {text-align: center; color: gray;}
-   .month {padding: 20px;}
-   table {
-   border-collapse: collapse;
-   font-family: Tahoma, Geneva, sans-serif;
-   width: 80%;
-   margin: 10px auto;
-}
-table td {
-   padding: 15px;
-}
-table th{
-   padding: 10px;
-   color: darkblue;
-
-}
-table thead td {
-   background-color: #54585d;
-   color: darkgrey;
-   font-weight: bold;
-   font-size: 13px;
-   border: 1px solid #54585d;
-}
-table tbody td {
-   color: #636363;
-   border: 1px solid #dddfe1;
-}
-table tbody tr {
-   background-color: #f9fafb;
-}
-table tbody tr:nth-child(odd) {
-   background-color: #ffffff;
-}
-</style>
 <body>
 
 <div class="header">
@@ -70,6 +71,7 @@ table tbody tr:nth-child(odd) {
                 <td th:text="${transaction.amount}"></td>
                 <td th:text="${transaction.status}"></td>
                 <td th:text="${transaction.category}"></td>
+            </tr>
         </table>
     </div>
 </div>

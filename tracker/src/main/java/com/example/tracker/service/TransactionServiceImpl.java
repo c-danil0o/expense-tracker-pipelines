@@ -1,7 +1,11 @@
 package com.example.tracker.service;
 
+import com.example.tracker.dto.TransactionDTO;
+import com.example.tracker.dto.TransactionGroupDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
-import com.example.tracker.exceptions.TransactionGroupAlreadyExists;
+import com.example.tracker.exceptions.TransactionGroupAlreadyExistsException;
+import com.example.tracker.exceptions.TransactionGroupNotFoundException;
+import com.example.tracker.mapper.TransactionMapper;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.model.TransactionGroup;
 import com.example.tracker.repository.TransactionGroupRepository;
@@ -17,49 +21,52 @@ import java.util.List;
 public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionGroupRepository transactionGroupRepository;
+    private final TransactionMapper transactionMapper;
 
 
-    public TransactionGroup createGroup(TransactionGroup transactionGroup) throws TransactionGroupAlreadyExists {
-        if (transactionGroup.getUserId() == null){
-            if (this.transactionGroupRepository.getByName(transactionGroup.getName()) != null){
-                 throw new TransactionGroupAlreadyExists("Group with given name already exists!");
+    public TransactionGroupDTO createGroup(TransactionGroupDTO transactionGroupDTO) throws TransactionGroupAlreadyExistsException {
+        if (transactionGroupDTO.getUserId() == null){
+            if (this.transactionGroupRepository.getByName(transactionGroupDTO.getName()) != null){
+                 throw new TransactionGroupAlreadyExistsException("Group with given name already exists!");
             }
         }else{
-            if (this.transactionGroupRepository.getByUserId(transactionGroup.getUserId()).stream().anyMatch(group1 -> group1.getName().equalsIgnoreCase(transactionGroup.getName()))){
-                throw new TransactionGroupAlreadyExists("Group with given name already exists!");
+            if (this.transactionGroupRepository.getByUserId(transactionGroupDTO.getUserId()).stream().anyMatch(group1 -> group1.getName().equalsIgnoreCase(transactionGroupDTO.getName()))){
+                throw new TransactionGroupAlreadyExistsException("Group with given name already exists!");
             }
         }
-        return this.transactionGroupRepository.save(transactionGroup);
+        TransactionGroup savedTransactionGroup = this.transactionGroupRepository.save(this.transactionMapper.fromTransactionGroupDTO(transactionGroupDTO));
+        return  this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
     }
 
     @Override
-    public List<Transaction> findAll() {
-        return this.transactionRepository.findAll();
+    public TransactionGroupDTO getGroupById(Long id) throws TransactionGroupNotFoundException {
+        return this.transactionMapper.toTransactionGroupDTO(this.transactionGroupRepository.findById(id).orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!")));
     }
 
     @Override
-    public Transaction findById(Long transactionId) throws ElementNotFoundException {
-        return this.transactionRepository.findById(transactionId).orElseThrow(() -> new ElementNotFoundException("No such element with given id!"));
+    public List<TransactionDTO> findAll() {
+        return this.transactionRepository.findAll().stream().map(this.transactionMapper::toTransactionDTO).toList();
     }
 
     @Override
-    public Transaction save(Transaction object) {
-        return this.transactionRepository.save(object);
+    public TransactionDTO findById(Long transactionId) throws ElementNotFoundException {
+        return this.transactionMapper.toTransactionDTO(this.transactionRepository.findById(transactionId).orElseThrow(() -> new ElementNotFoundException("No such element with given id!")));
     }
 
     @Override
-    public Transaction update(Transaction newTransaction) throws ElementNotFoundException {
-        Transaction transaction = this.transactionRepository.findById(newTransaction.getId()).orElseThrow(() -> new ElementNotFoundException("No such element with given id!"));
-        transaction.setAmount(newTransaction.getAmount());
-        transaction.setTransactionGroup(newTransaction.getTransactionGroup());
-        transaction.setTimestamp(newTransaction.getTimestamp());
-        transaction.setStatus(newTransaction.getStatus());
-        transaction.setRepeatType(newTransaction.getRepeatType());
-        transaction.setUser(newTransaction.getUser());
-        transaction.setType(newTransaction.getType());
-        transaction.setCurrency(newTransaction.getCurrency());
+    public TransactionDTO save(TransactionDTO transactionDTO) {
+        Transaction savedTransaction = this.transactionRepository.save(this.transactionMapper.fromTransactionDTO(transactionDTO));
+        return this.transactionMapper.toTransactionDTO(savedTransaction);
+    }
 
-        return this.transactionRepository.save(transaction);
+    @Override
+    public TransactionDTO update(TransactionDTO newTransaction) throws ElementNotFoundException {
+        if (!this.transactionRepository.existsById(newTransaction.getId()))
+            throw new ElementNotFoundException("Transaction with given id doesn't exist!");
+        Transaction transaction = this.transactionMapper.fromTransactionDTO(newTransaction);
+        transaction.setId(newTransaction.getId());
+        Transaction savedTransaction = this.transactionRepository.save(transaction);
+        return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
     @Override

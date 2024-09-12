@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -52,4 +53,19 @@ public class TransactionController {
     public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
         return ResponseEntity.ok(this.transactionService.findAll());
     }
+
+
+    @GetMapping(value = "/transaction/query")
+    public ResponseEntity<List<TransactionDTO>> queryTransactions(@RequestParam(required = false) LocalDateTime startDate,
+                                                                  @RequestParam(required = false) LocalDateTime endDate,
+                                                                  @RequestParam(required = false) String type,
+                                                                  @RequestParam(required = false) String currency,
+                                                                  @RequestParam(required = false) String category,
+                                                                  @RequestParam(required = false) Integer page,
+                                                                  @RequestParam(required = false) Integer pageSize,
+                                                                  @RequestParam(required = false) String sortParam) {
+
+        return ResponseEntity.ok(this.transactionService.query(startDate, endDate, type, currency, category, page, pageSize, sortParam));
+    }
 }
+

@@ -5,6 +5,7 @@ import com.example.tracker.dto.TransactionGroupDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
 import com.example.tracker.exceptions.TransactionGroupAlreadyExistsException;
 import com.example.tracker.exceptions.TransactionGroupNotFoundException;
+import com.example.tracker.filter.TransactionSpecification;
 import com.example.tracker.mapper.TransactionMapper;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.model.TransactionGroup;
@@ -13,9 +14,15 @@ import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -49,6 +56,25 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<TransactionDTO> findAll() {
         return this.transactionRepository.findAll().stream().map(this.transactionMapper::toTransactionDTO).toList();
+    }
+
+    @Override
+    public List<TransactionDTO> query(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
+                                      String category, Integer page, Integer pageSize, String sortParam){
+        Specification<Transaction> filters = Specification.where(startDate == null && endDate == null ? null : TransactionSpecification.isBetweenDates(startDate, endDate)).
+                and(StringUtils.isBlank(type) ? null : TransactionSpecification.hasTransactionType(type))
+                .and(StringUtils.isBlank(currency) ? null : TransactionSpecification.hasCurrency(currency))
+                .and(StringUtils.isBlank(category) ? null : TransactionSpecification.isCategory(category));
+        Pageable pageable = null;
+        if (page != null && pageSize != null && !StringUtils.isBlank(sortParam)){
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortParam));
+        }else if (!StringUtils.isBlank(sortParam)){
+            pageable = Pageable.unpaged(Sort.by(sortParam));
+        }else{
+            pageable = Pageable.unpaged();
+        }
+        return this.transactionRepository.findAll(filters, pageable).stream().map(this.transactionMapper::toTransactionDTO).toList();
+
     }
 
     @Override

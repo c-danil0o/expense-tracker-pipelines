@@ -1,17 +1,21 @@
 package com.example.tracker.repository;
 
+import com.example.tracker.dto.TransactionDTO;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.utils.MonthData;
 import com.example.tracker.utils.ReportTableRow;
 import jakarta.persistence.ColumnResult;
 import jakarta.persistence.ConstructorResult;
 import jakarta.persistence.SqlResultSetMapping;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
     @Query("SELECT tg.name AS categoryName, " +
             "MONTH(t.timestamp) AS month, " +
             "SUM(CASE WHEN t.type = 'INCOME' THEN t.amount ELSE 0 END) AS incomes, " +
@@ -24,5 +28,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "GROUP BY tg.name, MONTH(t.timestamp) " +
             "ORDER BY month"
     )
+
     List<Object []> getMonthlyReport(Long userId, int inputYear);
 }

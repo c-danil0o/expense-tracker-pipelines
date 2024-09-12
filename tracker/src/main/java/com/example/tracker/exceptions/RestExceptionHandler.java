@@ -60,4 +60,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         apiError.setDebugMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
+
+    @ExceptionHandler(MailSendFailedException.class)
+    protected ResponseEntity<Object> handleMailSendFail(
+            MailSendFailedException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+
+    @ExceptionHandler(ReportDownloadFailedException.class)
+    protected ResponseEntity<Object> handleReportDownloadFail(
+            ReportDownloadFailedException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
 }

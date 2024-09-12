@@ -1,11 +1,9 @@
 package com.example.tracker.service.interfaces;
+import org.springframework.core.io.ByteArrayResource;
 
-import com.example.tracker.utils.ReportTableRow;
-
-import java.util.List;
-import java.util.Map;
 
 public interface ReportService {
     String generateReport(Long userId,int year);
-//    Map<String, List<ReportTableRow>> getReportByMonthForYear(Long userId, int year);
+    boolean sendEmail(Long userId, int year);
+    ByteArrayResource downloadPdfReport(Long userId, int year);
 }

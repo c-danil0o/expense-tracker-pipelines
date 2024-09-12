@@ -7,6 +7,9 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class HtmlPdfGenerator {
@@ -24,6 +27,7 @@ public class HtmlPdfGenerator {
 
         return templateEngine.process("report", context);
     }
+
 
     public void generatePdfFromHtml(String html) {
         String outputFolder = "report.pdf";

@@ -9,5 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 public class MonthData {
     private String name;
+    private String total;
     private List<ReportTableRow> categories;
 }

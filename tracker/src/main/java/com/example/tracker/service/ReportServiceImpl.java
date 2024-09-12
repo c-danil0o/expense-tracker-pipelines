@@ -32,7 +32,8 @@ public class ReportServiceImpl implements ReportService {
         Map<String, Object> data = new HashMap<>();
         List<MonthData> months = new ArrayList<>();
         for (Map.Entry<String, List<ReportTableRow>> entry : this.getReportByMonthForYear(userId, year).entrySet()){
-            months.add(new MonthData(numberToMonth(Integer.parseInt(entry.getKey())), entry.getValue()));
+            double monthTotal = entry.getValue().stream().map(x -> Double.parseDouble(x.getTotal())).reduce(0.0, Double::sum);
+            months.add(new MonthData(numberToMonth(Integer.parseInt(entry.getKey())),String.valueOf(monthTotal), entry.getValue()));
         }
         data.put("months", months);
         data.put("user", this.userRepository.findById(userId).orElseThrow(()-> new ElementNotFoundException("User not found!")).getEmail());

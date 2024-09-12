@@ -9,8 +9,8 @@
         body {margin: 20px; font-family: "Poppins", sans-serif;}
        .header {margin: 20px;}
        .header-text {text-align: center; color: gray;}
-       .month {padding: 20px;}
-       .number {text-align:right;}
+       .month {padding: 20px; background-color: lightgray; border-radius:25px; margin: 10px;}
+
        table {
        border-collapse: collapse;
        font-family: Tahoma, Geneva, sans-serif;
@@ -22,6 +22,7 @@
     table td {
        padding: 15px;
     }
+    .number {text-align:right;}
     table th{
        padding: 10px;
        color: darkblue;
@@ -43,8 +44,15 @@
     table tbody tr:nth-child(odd) {
        background-color: #ffffff;
     }
-    </style>
-</head>
+    .month-total {
+        width: 98%;
+        color: darkblue;
+
+        display: flex;
+        justify-content: space-between;
+    }
+
+    </style></head>
 <body>
 
 <div class="header">
@@ -70,6 +78,11 @@
                 <td class="number" th:text="${category.total}"></td>
             </tr>
         </table>
+        <div class="month-total">
+            <span>Month total:</span>
+            <span th:text="'Month total: ' + ${month.total}"></span>
+        </div>
+
     </div>
 </div>
 <div class="footer"></div>

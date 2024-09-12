@@ -10,6 +10,7 @@
        .header {margin: 20px;}
        .header-text {text-align: center; color: gray;}
        .month {padding: 20px;}
+       .number {text-align:right;}
        table {
        border-collapse: collapse;
        font-family: Tahoma, Geneva, sans-serif;
@@ -56,21 +57,17 @@
         <table class="month-table">
             <tr>
                 <th></th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Currency</th>
-                <th>Amount</th>
-                <th>Status</th>
                 <th>Category</th>
+                <th>Expenses</th>
+                <th>Incomes</th>
+                <th>Total</th>
             </tr>
-            <tr th:each="transaction, iterStat: ${month.transactions}">
+            <tr th:each="category, iterStat: ${month.categories}">
                 <td th:text="${iterStat.index + 1}"></td>
-                <td th:text="${transaction.date}"></td>
-                <td th:text="${transaction.time}"></td>
-                <td th:text="${transaction.currency}"></td>
-                <td th:text="${transaction.amount}"></td>
-                <td th:text="${transaction.status}"></td>
-                <td th:text="${transaction.category}"></td>
+                <td th:text="${category.categoryName}"></td>
+                <td class="number" th:text="${category.expenses}"></td>
+                <td class="number" th:text="${category.incomes}"></td>
+                <td class="number" th:text="${category.total}"></td>
             </tr>
         </table>
     </div>

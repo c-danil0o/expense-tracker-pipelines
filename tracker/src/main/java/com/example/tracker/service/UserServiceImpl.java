@@ -1,6 +1,8 @@
 package com.example.tracker.service;
 
+import com.example.tracker.dto.UserDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
+import com.example.tracker.mapper.UserMapper;
 import com.example.tracker.model.User;
 import com.example.tracker.repository.UserRepository;
 import com.example.tracker.service.interfaces.UserService;
@@ -13,34 +15,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
-    public List<User> findAll() {
-        return this.userRepository.findAll();
+    public List<UserDTO> findAll() {
+        return this.userRepository.findAll().stream().map(this.userMapper::toUserDTO).toList();
     }
 
     @Override
-    public User findById(Long userId) throws ElementNotFoundException {
-        return this.userRepository.findById(userId).orElseThrow(() -> new ElementNotFoundException("No such element with given id!"));
+    public UserDTO findById(Long userId) throws ElementNotFoundException {
+        return this.userMapper.toUserDTO(this.userRepository.findById(userId).orElseThrow(() -> new ElementNotFoundException("No such element with given id!")));
     }
 
     @Override
-    public User save(User object) {
-        return this.userRepository.save(object);
+    public UserDTO save(UserDTO userDTO) {
+        User savedUser = this.userRepository.save(this.userMapper.fromUserDTO(userDTO));
+        return this.userMapper.toUserDTO(savedUser);
     }
 
     @Override
-    public User update(User newUser) throws ElementNotFoundException {
-        User user = this.userRepository.findById(newUser.getUserId()).orElseThrow(() -> new ElementNotFoundException("No such element with given id!"));
-        user.setCurrency(newUser.getCurrency());
-        user.setEmail(newUser.getEmail());
-        user.setFunds(newUser.getFunds());
-        user.setType(newUser.getType());
-        user.setFirstName(newUser.getFirstName());
-        user.setLastName(newUser.getLastName());
-        user.setReservedFunds(newUser.getReservedFunds());
-
-        return this.userRepository.save(user);
+    public UserDTO update(UserDTO newUser) throws ElementNotFoundException {
+        if (!this.userRepository.existsById(newUser.getUserId()))
+            throw new ElementNotFoundException("User with given id doesn't exist!");
+        User user = this.userMapper.fromUserDTO(newUser);
+        user.setUserId(newUser.getUserId());
+        User savedUser = this.userRepository.save(user);
+        return this.userMapper.toUserDTO(savedUser);
     }
 
     @Override
@@ -51,5 +51,10 @@ public class UserServiceImpl implements UserService {
             throw new ElementNotFoundException("No such element with given id!");
         }
 
+    }
+
+    @Override
+    public User findEntityById(Long id) {
+        return this.userRepository.findById(id).orElseThrow(() -> new ElementNotFoundException("No such element with given id!"));
     }
 }

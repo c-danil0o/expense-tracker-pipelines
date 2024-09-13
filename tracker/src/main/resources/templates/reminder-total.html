@@ -8,14 +8,15 @@
     <style>
         body {margin: 20px; font-family: "Poppins", sans-serif;}
        .email-header {margin: 20px; text-align: center; color: gray;}
+        .email-body {padding: 10px; margin: 3px; border-radius: 10px; background-color: gray;}
 
     </style></head>
 <body>
 <div class="email-header">
-    <span th:text="Report for amount spent"></span>
+    <span>Report for amount spent</span>
 </div>
 <div class="email-body">
-    <span th:text="'This is a report for total amount spent in time between' ${startDate} + 'and' + ${endDate}"></span>
+    <span th:text="'This is a report for total amount spent in time between ' + ${startDate} + ' and ' + ${endDate} + '.'"></span>
     <br/>
     <span th:text="'You have spent the amount of: ' + ${spent} + '.'"></span>
     <br/>

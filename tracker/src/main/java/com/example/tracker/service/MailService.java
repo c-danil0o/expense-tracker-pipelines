@@ -46,6 +46,7 @@ public class MailService {
             String htmlData = htmlPdfGenerator.parseReportTemplate(templateData, "reminder-total");
             try {
                 this.sendHtmlEmail(reminder.getUser(), htmlData, "Expense tracker reminder");
+                System.out.println("Sent email to " + reminder.getUser());
             } catch (MessagingException e) {
                 throw new MailSendFailedException("Failed sending email for reminder!");
             }

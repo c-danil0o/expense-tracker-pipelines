@@ -11,7 +11,6 @@ import com.example.tracker.mapper.TransactionMapper;
 import com.example.tracker.model.*;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
-import com.example.tracker.service.interfaces.ReminderService;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
 import com.example.tracker.utils.EmailReminder;
@@ -89,8 +88,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate) {
-        return this.transactionRepository.getTotalSpentForUserInTimePeriod(userId, startDate.atTime(0,0), endDate.atTime(0,0));
+    public double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate) {
+        Double amount = this.transactionRepository.getTotalSpentForUserInTimePeriod(userId, startDate.atTime(0,0), endDate.atTime(0,0));
+        if (amount == null)
+            return 0.0;
+        return amount;
     }
 
     @Override
@@ -135,7 +137,7 @@ public class TransactionServiceImpl implements TransactionService {
         for (Reminder reminder : reminders) {
             if (reminder.getType().equals(ReminderType.Total)) {
                 LocalDate startDate = reminder.getNextRun().minusDays(reminder.getRepeatRate());
-                Double amount = this.getTotalSpentForUserInTimePeriod(reminder.getUser().getUserId(), startDate, reminder.getNextRun());
+                double amount = this.getTotalSpentForUserInTimePeriod(reminder.getUser().getUserId(), startDate, reminder.getNextRun());
                 emailReminders.add(new EmailReminder(startDate, reminder.getNextRun(), reminder.getUser().getEmail(), amount));
             }
         }
@@ -143,7 +145,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
     @Override
     public double getTotalSpentForUserInTimePeriodForTransactionGroup(Long userId, LocalDate startDate, LocalDate endDate, Long transactionGroupId){
-        return this.transactionRepository.getTotalSpentForUserInTimePeriodForTransactionGroup(userId, startDate.atTime(0,0), endDate.atTime(0,0), transactionGroupId);
+        Double amount = this.transactionRepository.getTotalSpentForUserInTimePeriodForTransactionGroup
+                (userId, startDate.atTime(0,0), endDate.atTime(0,0), transactionGroupId);
+        if (amount == null)
+            return 0.0;
+        return amount;
     }
 
 

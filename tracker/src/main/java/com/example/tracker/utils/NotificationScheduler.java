@@ -18,8 +18,8 @@ public class NotificationScheduler {
     private final TransactionService transactionService;
 
 
-    // every 3 minutes for testing
-    @Scheduled(cron = "*/3 * * * * *")
+    // every 10 minutes for testing
+    @Scheduled(cron = "* */10 * * * *")
     public void checkDailyForScheduledNotifications(){
         List<Reminder> reminders =  this.reminderService.getRemindersForToday();
         this.mailService.sendReminders(this.transactionService.generateReminders(reminders));

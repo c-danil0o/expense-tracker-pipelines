@@ -17,7 +17,7 @@ public interface TransactionService extends CrudService<TransactionDTO, Long> {
     TransactionGroup getGroupById(Long id) throws TransactionGroupNotFoundException;
     List<TransactionDTO> query(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
                                       String category, String status, Integer page, Integer pageSize, String sortParam);
-    Double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate);
+    double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate);
     List<EmailReminder> generateReminders(List<Reminder> reminders);
 
     double getTotalSpentForUserInTimePeriodForTransactionGroup(Long userId, LocalDate startDate, LocalDate endDate, Long transactionGroupId);

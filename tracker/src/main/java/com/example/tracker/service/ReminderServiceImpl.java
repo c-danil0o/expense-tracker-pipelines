@@ -43,7 +43,7 @@ public class ReminderServiceImpl implements ReminderService {
     public ReminderDTO save(ReminderDTO reminderDTO) {
         User user =  this.userService.findEntityById(reminderDTO.getUserId());
         if (reminderDTO.getNextRun() == null){
-            reminderDTO.setNextRun(LocalDate.now());
+            reminderDTO.setNextRun(LocalDate.now().plusDays(reminderDTO.getRepeatRate()));
         }
         TransactionGroup group = this.transactionService.getGroupById(reminderDTO.getTransactionGroupId());
         Reminder savedReminder = this.reminderRepository.save(this.reminderMapper.fromReminderDTO(reminderDTO, user, group));

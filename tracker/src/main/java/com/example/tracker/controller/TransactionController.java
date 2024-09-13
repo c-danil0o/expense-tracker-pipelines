@@ -49,10 +49,10 @@ public class TransactionController {
         return ResponseEntity.ok(this.transactionService.findById(id));
     }
 
-    @GetMapping(value = "/transaction/all")
-    public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
-        return ResponseEntity.ok(this.transactionService.findAll());
-    }
+//    @GetMapping(value = "/transaction/all")
+//    public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
+//        return ResponseEntity.ok(this.transactionService.findAll());
+//    }
 
 
     @GetMapping(value = "/transaction/query")
@@ -61,11 +61,12 @@ public class TransactionController {
                                                                   @RequestParam(required = false) String type,
                                                                   @RequestParam(required = false) String currency,
                                                                   @RequestParam(required = false) String category,
+                                                                  @RequestParam(required = false) String status,
                                                                   @RequestParam(required = false) Integer page,
                                                                   @RequestParam(required = false) Integer pageSize,
                                                                   @RequestParam(required = false) String sortParam) {
 
-        return ResponseEntity.ok(this.transactionService.query(startDate, endDate, type, currency, category, page, pageSize, sortParam));
+        return ResponseEntity.ok(this.transactionService.query(startDate, endDate, type, currency, category, status, page, pageSize, sortParam));
     }
 }
 

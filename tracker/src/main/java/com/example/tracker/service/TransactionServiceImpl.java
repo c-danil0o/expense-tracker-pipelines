@@ -60,14 +60,19 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<TransactionDTO> query(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
-                                      String category, Integer page, Integer pageSize, String sortParam){
-        Specification<Transaction> filters = Specification.where(startDate == null && endDate == null ? null : TransactionSpecification.isBetweenDates(startDate, endDate)).
+                                      String category,String status, Integer page, Integer pageSize, String sortParam){
+        Specification<Transaction> filters = Specification.where(startDate == null && endDate == null ? null :
+                        TransactionSpecification.isBetweenDates(startDate, endDate)).
                 and(StringUtils.isBlank(type) ? null : TransactionSpecification.hasTransactionType(type))
                 .and(StringUtils.isBlank(currency) ? null : TransactionSpecification.hasCurrency(currency))
-                .and(StringUtils.isBlank(category) ? null : TransactionSpecification.isCategory(category));
+                .and(StringUtils.isBlank(category) ? null : TransactionSpecification.isCategory(category))
+                .and(StringUtils.isBlank(status) ? null : TransactionSpecification.hasTransactionStatus(status));
         Pageable pageable = null;
-        if (page != null && pageSize != null && !StringUtils.isBlank(sortParam)){
-            pageable = PageRequest.of(page, pageSize, Sort.by(sortParam));
+        if (page != null && pageSize != null){
+            if (!StringUtils.isBlank(sortParam))
+                pageable = PageRequest.of(page, pageSize, Sort.by(sortParam));
+            else
+                pageable = PageRequest.of(page, pageSize);
         }else if (!StringUtils.isBlank(sortParam)){
             pageable = Pageable.unpaged(Sort.by(sortParam));
         }else{

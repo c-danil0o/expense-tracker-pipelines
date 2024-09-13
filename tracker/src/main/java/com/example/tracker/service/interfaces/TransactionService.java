@@ -13,6 +13,6 @@ import java.util.List;
 public interface TransactionService extends CrudService<TransactionDTO, Long> {
     TransactionGroupDTO createGroup(TransactionGroupDTO transactionGroup) throws TransactionGroupAlreadyExistsException;
     TransactionGroupDTO getGroupById(Long id) throws TransactionGroupNotFoundException;
-    public List<TransactionDTO> query(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
-                                      String category, Integer page, Integer pageSize, String sortParam);
+    List<TransactionDTO> query(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
+                                      String category, String status, Integer page, Integer pageSize, String sortParam);
 }

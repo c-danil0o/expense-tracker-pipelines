@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"></meta>
+    <title>Expense tracker reminder</title>
+    <link href="https://fonts.cdnfonts.com/css/poppins" rel="stylesheet"></link>
+
+    <style>
+        body {margin: 20px; font-family: "Poppins", sans-serif;}
+       .email-header {margin: 20px; text-align: center; color: gray;}
+
+    </style></head>
+<body>
+<div class="email-header">
+    <span th:text="Report for amount spent"></span>
+</div>
+<div class="email-body">
+    <span th:text="'This is a report for total amount spent in time between' ${startDate} + 'and' + ${endDate}"></span>
+    <br/>
+    <span th:text="'You have spent the amount of: ' + ${spent} + '.'"></span>
+    <br/>
+
+</div>
+<div class="footer"></div>
+<span th:text="'Expense tracker for user ' + ${user} + '.'"></span>
+
+</body>
+</html>

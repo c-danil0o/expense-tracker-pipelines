@@ -46,8 +46,8 @@ public class ReportServiceImpl implements ReportService {
         }
         data.put("months", months);
         data.put("user", this.userRepository.findById(userId).orElseThrow(()-> new ElementNotFoundException("User not found!")).getEmail());
-        String htmlData = pdfGenerator.parseReportTemplate(data);
-        return pdfGenerator.parseReportTemplate(data);
+        String htmlData = pdfGenerator.parseReportTemplate(data, "report");
+        return pdfGenerator.parseReportTemplate(data, "report");
     }
 
     public void deleteGeneratedPdf(){

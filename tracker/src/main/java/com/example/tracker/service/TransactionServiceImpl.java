@@ -22,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -80,6 +81,11 @@ public class TransactionServiceImpl implements TransactionService {
         }
         return this.transactionRepository.findAll(filters, pageable).stream().map(this.transactionMapper::toTransactionDTO).toList();
 
+    }
+
+    @Override
+    public Double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate) {
+        return this.transactionRepository.getTotalSpentForUserInTimePeriod(userId, startDate, endDate);
     }
 
     @Override

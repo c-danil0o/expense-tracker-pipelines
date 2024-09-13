@@ -2,18 +2,26 @@ package com.example.tracker.service;
 
 import com.example.tracker.dto.ReminderDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
+import com.example.tracker.exceptions.MailSendFailedException;
 import com.example.tracker.mapper.ReminderMapper;
 import com.example.tracker.model.Reminder;
+import com.example.tracker.model.ReminderType;
 import com.example.tracker.model.User;
 import com.example.tracker.repository.ReminderRepository;
 import com.example.tracker.repository.UserRepository;
 import com.example.tracker.service.interfaces.ReminderService;
+import com.example.tracker.service.interfaces.TransactionService;
+import com.example.tracker.utils.HtmlPdfGenerator;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +31,7 @@ public class ReminderServiceImpl implements ReminderService {
     private final UserRepository userRepository;
     private final ReminderMapper reminderMapper;
     private final MailService mailService;
+    private final TransactionService transactionService;
 
     @Override
     public List<ReminderDTO> findAll() {
@@ -69,8 +78,23 @@ public class ReminderServiceImpl implements ReminderService {
 
     @Override
     public void sendReminders(List<Reminder> reminders) {
+        HtmlPdfGenerator htmlPdfGenerator = new HtmlPdfGenerator();
         for (Reminder reminder: reminders){
-
+            Map<String, Object> templateData = new HashMap<>();
+            if (reminder.getType().equals(ReminderType.Total)){
+                LocalDate startDate = reminder.getNextRun().minusDays(reminder.getRepeatRate());
+                Double amount = this.transactionService.getTotalSpentForUserInTimePeriod(reminder.getUser().getUserId(), startDate, reminder.getNextRun());
+                templateData.put("startDate", startDate.format(DateTimeFormatter.ISO_DATE));
+                templateData.put("endDate", reminder.getNextRun().format(DateTimeFormatter.ISO_DATE));
+                templateData.put("spent", amount);
+                templateData.put("user", reminder.getUser().getEmail());
+                String htmlData = htmlPdfGenerator.parseReportTemplate(templateData, "reminder-total");
+                try {
+                    this.mailService.sendHtmlEmail(reminder.getUser().getEmail(), htmlData, "Expense tracker reminder");
+                } catch (MessagingException e) {
+                    throw new MailSendFailedException("Failed sending email for reminder!");
+                }
+            }
         }
 
     }

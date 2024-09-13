@@ -2,7 +2,9 @@ package com.example.tracker.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -19,7 +21,9 @@ public class Reminder {
     private ReminderType type;
     @ManyToOne
     private User user;
-    // Last time reminder was sent to a user
-    private LocalDateTime lastSent;
+    // Next time reminder will be sent to a user
+    private LocalDate nextRun;
     private int repeatRate;
+    @OneToOne()
+    private TransactionGroup group;
 }

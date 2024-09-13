@@ -11,6 +11,8 @@ import com.example.tracker.service.interfaces.ReminderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -20,6 +22,7 @@ public class ReminderServiceImpl implements ReminderService {
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
     private final ReminderMapper reminderMapper;
+    private final MailService mailService;
 
     @Override
     public List<ReminderDTO> findAll() {
@@ -34,6 +37,9 @@ public class ReminderServiceImpl implements ReminderService {
     @Override
     public ReminderDTO save(ReminderDTO reminderDTO) {
         User user =  this.userRepository.findById(reminderDTO.getUserId()).orElseThrow(() -> new ElementNotFoundException("User with given id not found!"));
+        if (reminderDTO.getNextRun() == null){
+            reminderDTO.setNextRun(LocalDate.now());
+        }
         Reminder savedReminder = this.reminderRepository.save(this.reminderMapper.fromReminderDTO(reminderDTO, user));
         return this.reminderMapper.toReminderDTO(savedReminder);
     }
@@ -56,4 +62,23 @@ public class ReminderServiceImpl implements ReminderService {
         }
 
     }
+    @Override
+    public List<Reminder> getRemindersForToday() {
+        return this.reminderRepository.getRemindersForDate(LocalDate.now());
+    }
+
+    @Override
+    public void sendReminders(List<Reminder> reminders) {
+        for (Reminder reminder: reminders){
+
+        }
+
+    }
+
+    @Override
+    public void updateReminders(List<Reminder> reminders) {
+
+    }
+
+
 }

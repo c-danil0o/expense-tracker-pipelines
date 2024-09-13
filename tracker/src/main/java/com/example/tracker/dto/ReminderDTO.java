@@ -4,6 +4,7 @@ import com.example.tracker.model.ReminderType;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -11,7 +12,8 @@ import java.time.LocalDateTime;
 public class ReminderDTO {
     private Long id;
     private ReminderType type;
-    private LocalDateTime lastSent;
+    private LocalDate nextRun;
     private int repeatRate;
     private Long userId;
+    private Long transactionGroupId;
 }

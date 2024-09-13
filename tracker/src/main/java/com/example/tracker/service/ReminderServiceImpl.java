@@ -2,28 +2,17 @@ package com.example.tracker.service;
 
 import com.example.tracker.dto.ReminderDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
-import com.example.tracker.exceptions.MailSendFailedException;
 import com.example.tracker.mapper.ReminderMapper;
 import com.example.tracker.model.Reminder;
-import com.example.tracker.model.ReminderType;
 import com.example.tracker.model.User;
 import com.example.tracker.repository.ReminderRepository;
 import com.example.tracker.repository.UserRepository;
 import com.example.tracker.service.interfaces.ReminderService;
-import com.example.tracker.service.interfaces.TransactionService;
-import com.example.tracker.utils.BudgetCapExceed;
-import com.example.tracker.utils.HtmlPdfGenerator;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

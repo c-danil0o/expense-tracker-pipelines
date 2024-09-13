@@ -1,9 +1,6 @@
 package com.example.tracker.service;
 
 import com.example.tracker.exceptions.MailSendFailedException;
-import com.example.tracker.model.Reminder;
-import com.example.tracker.model.ReminderType;
-import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.utils.BudgetCapExceed;
 import com.example.tracker.utils.EmailReminder;
 import com.example.tracker.utils.HtmlPdfGenerator;
@@ -15,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;

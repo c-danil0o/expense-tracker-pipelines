@@ -2,8 +2,6 @@ package com.example.tracker.controller;
 
 import com.example.tracker.dto.TransactionDTO;
 import com.example.tracker.dto.TransactionGroupDTO;
-import com.example.tracker.model.Transaction;
-import com.example.tracker.model.TransactionGroup;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;

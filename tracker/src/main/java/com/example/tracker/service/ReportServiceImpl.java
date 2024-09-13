@@ -2,7 +2,6 @@ package com.example.tracker.service;
 
 import com.example.tracker.exceptions.ElementNotFoundException;
 import com.example.tracker.exceptions.MailSendFailedException;
-import com.example.tracker.model.Transaction;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
 import com.example.tracker.repository.UserRepository;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

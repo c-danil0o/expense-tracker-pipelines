@@ -1,7 +1,6 @@
 package com.example.tracker.filter;
 
 import com.example.tracker.model.Transaction;
-import com.example.tracker.model.TransactionGroup;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;

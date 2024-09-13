@@ -1,9 +1,6 @@
 package com.example.tracker.controller;
 
 import com.example.tracker.dto.UserDTO;
-import com.example.tracker.exceptions.ElementNotFoundException;
-import com.example.tracker.model.User;
-import com.example.tracker.service.UserServiceImpl;
 import com.example.tracker.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

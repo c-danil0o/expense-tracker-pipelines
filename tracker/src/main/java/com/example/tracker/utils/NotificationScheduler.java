@@ -13,12 +13,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class NotificationScheduler {
-    private ReminderService reminderService;
-    private MailService mailService;
-    private TransactionService transactionService;
+    private final ReminderService reminderService;
+    private final MailService mailService;
+    private final TransactionService transactionService;
 
 
-    @Scheduled(cron = "0 12 * * * *")
+    // every 3 minutes for testing
+    @Scheduled(cron = "*/3 * * * * *")
     public void checkDailyForScheduledNotifications(){
         List<Reminder> reminders =  this.reminderService.getRemindersForToday();
         this.mailService.sendReminders(this.transactionService.generateReminders(reminders));

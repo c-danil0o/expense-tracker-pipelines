@@ -85,7 +85,7 @@ public class ReminderServiceImpl implements ReminderService {
     }
     @Override
     public Reminder findReminderByUserIdAndGroupId(Long userId, Long transactionGroupId) {
-        return this.reminderRepository.findReminderByUserIdAndTransactionGroupId(userId, transactionGroupId).orElse(null);
+        return this.reminderRepository.findReminderByUserIdAndTransactionGroupIdBudgetCap(userId, transactionGroupId).orElse(null);
     }
 
     @Override

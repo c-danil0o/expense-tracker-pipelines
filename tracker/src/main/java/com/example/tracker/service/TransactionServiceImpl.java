@@ -7,13 +7,14 @@ import com.example.tracker.exceptions.TransactionGroupAlreadyExistsException;
 import com.example.tracker.exceptions.TransactionGroupNotFoundException;
 import com.example.tracker.filter.TransactionSpecification;
 import com.example.tracker.mapper.TransactionMapper;
-import com.example.tracker.model.Transaction;
-import com.example.tracker.model.TransactionGroup;
-import com.example.tracker.model.User;
+import com.example.tracker.model.*;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
+import com.example.tracker.service.interfaces.ReminderService;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
+import com.example.tracker.utils.BudgetCapExceed;
+import com.example.tracker.utils.EmailReminder;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +25,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,20 +38,22 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionGroupRepository transactionGroupRepository;
     private final TransactionMapper transactionMapper;
     private final UserService userService;
+    private final ReminderService reminderService;
+    private final MailService mailService;
 
 
     public TransactionGroupDTO createGroup(TransactionGroupDTO transactionGroupDTO) throws TransactionGroupAlreadyExistsException {
-        if (transactionGroupDTO.getUserId() == null){
-            if (this.transactionGroupRepository.getByName(transactionGroupDTO.getName()) != null){
-                 throw new TransactionGroupAlreadyExistsException("Group with given name already exists!");
+        if (transactionGroupDTO.getUserId() == null) {
+            if (this.transactionGroupRepository.getByName(transactionGroupDTO.getName()) != null) {
+                throw new TransactionGroupAlreadyExistsException("Group with given name already exists!");
             }
-        }else{
-            if (this.transactionGroupRepository.getByUserId(transactionGroupDTO.getUserId()).stream().anyMatch(group1 -> group1.getName().equalsIgnoreCase(transactionGroupDTO.getName()))){
+        } else {
+            if (this.transactionGroupRepository.getByUserId(transactionGroupDTO.getUserId()).stream().anyMatch(group1 -> group1.getName().equalsIgnoreCase(transactionGroupDTO.getName()))) {
                 throw new TransactionGroupAlreadyExistsException("Group with given name already exists!");
             }
         }
         TransactionGroup savedTransactionGroup = this.transactionGroupRepository.save(this.transactionMapper.fromTransactionGroupDTO(transactionGroupDTO));
-        return  this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
+        return this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
     }
 
     @Override
@@ -61,7 +68,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<TransactionDTO> query(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
-                                      String category,String status, Integer page, Integer pageSize, String sortParam){
+                                      String category, String status, Integer page, Integer pageSize, String sortParam) {
         Specification<Transaction> filters = Specification.where(startDate == null && endDate == null ? null :
                         TransactionSpecification.isBetweenDates(startDate, endDate)).
                 and(StringUtils.isBlank(type) ? null : TransactionSpecification.hasTransactionType(type))
@@ -69,14 +76,14 @@ public class TransactionServiceImpl implements TransactionService {
                 .and(StringUtils.isBlank(category) ? null : TransactionSpecification.isCategory(category))
                 .and(StringUtils.isBlank(status) ? null : TransactionSpecification.hasTransactionStatus(status));
         Pageable pageable = null;
-        if (page != null && pageSize != null){
+        if (page != null && pageSize != null) {
             if (!StringUtils.isBlank(sortParam))
                 pageable = PageRequest.of(page, pageSize, Sort.by(sortParam));
             else
                 pageable = PageRequest.of(page, pageSize);
-        }else if (!StringUtils.isBlank(sortParam)){
+        } else if (!StringUtils.isBlank(sortParam)) {
             pageable = Pageable.unpaged(Sort.by(sortParam));
-        }else{
+        } else {
             pageable = Pageable.unpaged();
         }
         return this.transactionRepository.findAll(filters, pageable).stream().map(this.transactionMapper::toTransactionDTO).toList();
@@ -99,6 +106,7 @@ public class TransactionServiceImpl implements TransactionService {
         TransactionGroup transactionGroup = this.transactionGroupRepository.findById(transactionDTO.getTransactionGroupId())
                 .orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
         Transaction savedTransaction = this.transactionRepository.save(this.transactionMapper.fromTransactionDTO(transactionDTO, user, transactionGroup));
+        this.sendNotificationIfBudgetCapExceeded(transactionDTO.getUserId(), transactionDTO.getTransactionGroupId());
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
@@ -112,17 +120,43 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = this.transactionMapper.fromTransactionDTO(newTransaction, user, transactionGroup);
         transaction.setId(newTransaction.getId());
         Transaction savedTransaction = this.transactionRepository.save(transaction);
+        this.sendNotificationIfBudgetCapExceeded(newTransaction.getUserId(), newTransaction.getTransactionGroupId());
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
     @Override
     public void delete(Long transactionId) throws ElementNotFoundException {
-        if (this.transactionRepository.existsById(transactionId)){
+        if (this.transactionRepository.existsById(transactionId)) {
             this.transactionRepository.deleteById(transactionId);
-        }else{
+        } else {
             throw new ElementNotFoundException("No such element with given ID!");
         }
+    }
 
+    @Override
+    public List<EmailReminder> generateReminders(List<Reminder> reminders) {
+        List<EmailReminder> emailReminders = new ArrayList<>();
+        for (Reminder reminder : reminders) {
+            if (reminder.getType().equals(ReminderType.Total)) {
+                LocalDate startDate = reminder.getNextRun().minusDays(reminder.getRepeatRate());
+                Double amount = this.getTotalSpentForUserInTimePeriod(reminder.getUser().getUserId(), startDate, reminder.getNextRun());
+                emailReminders.add(new EmailReminder(startDate, reminder.getNextRun(), reminder.getUser().getEmail(), amount));
+            }
+        }
+        return emailReminders;
+    }
+
+
+    private void sendNotificationIfBudgetCapExceeded(Long userId, Long transactionGroupId) {
+        Reminder reminder = this.reminderService.findReminderByUserIdAndGroupId(userId, transactionGroupId);
+        if (reminder != null) {
+            double budgetCap = this.transactionGroupRepository.findById(reminder.getGroup().getId()).orElseThrow(() ->
+                    new TransactionGroupNotFoundException("Transaction group not found!")).getBudgetCap();
+            double spentAmount = this.transactionRepository.getTotalSpentForUserInTimePeriodForTransactionGroup(userId,
+                    reminder.getNextRun().minusDays(reminder.getRepeatRate()), reminder.getNextRun(), transactionGroupId);
+            if (budgetCap <= spentAmount)
+                this.mailService.sendBudgetCapReminder(new BudgetCapExceed(reminder.getUser().getEmail(), budgetCap, spentAmount, reminder.getGroup().getName()));
+        }
 
     }
 }

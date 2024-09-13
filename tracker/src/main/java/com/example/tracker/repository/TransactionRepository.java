@@ -39,4 +39,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
             "AND t.timestamp BETWEEN :startDate AND :endDate"
     )
     Double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate);
+
+
+    @Query("SELECT SUM(t.amount) AS totalSpent " +
+            "FROM Transaction t " +
+            "JOIN t.user user " +
+            "JOIN t.transactionGroup tg " +
+            "WHERE t.type = 'EXPENSE' " +
+            "AND user.userId = :userId " +
+            "AND tg.id = :transactionGroupId " +
+            "AND t.timestamp BETWEEN :startDate AND :endDate"
+    )
+    Double getTotalSpentForUserInTimePeriodForTransactionGroup(Long userId, LocalDate startDate, LocalDate endDate, Long transactionGroupId);
 }

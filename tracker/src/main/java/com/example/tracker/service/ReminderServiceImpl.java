@@ -11,6 +11,7 @@ import com.example.tracker.repository.ReminderRepository;
 import com.example.tracker.repository.UserRepository;
 import com.example.tracker.service.interfaces.ReminderService;
 import com.example.tracker.service.interfaces.TransactionService;
+import com.example.tracker.utils.BudgetCapExceed;
 import com.example.tracker.utils.HtmlPdfGenerator;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +33,6 @@ public class ReminderServiceImpl implements ReminderService {
     private final UserRepository userRepository;
     private final ReminderMapper reminderMapper;
     private final MailService mailService;
-    private final TransactionService transactionService;
 
     @Override
     public List<ReminderDTO> findAll() {
@@ -77,31 +78,16 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
-    public void sendReminders(List<Reminder> reminders) {
-        HtmlPdfGenerator htmlPdfGenerator = new HtmlPdfGenerator();
+    public void updateReminders(List<Reminder> reminders) {
         for (Reminder reminder: reminders){
-            Map<String, Object> templateData = new HashMap<>();
-            if (reminder.getType().equals(ReminderType.Total)){
-                LocalDate startDate = reminder.getNextRun().minusDays(reminder.getRepeatRate());
-                Double amount = this.transactionService.getTotalSpentForUserInTimePeriod(reminder.getUser().getUserId(), startDate, reminder.getNextRun());
-                templateData.put("startDate", startDate.format(DateTimeFormatter.ISO_DATE));
-                templateData.put("endDate", reminder.getNextRun().format(DateTimeFormatter.ISO_DATE));
-                templateData.put("spent", amount);
-                templateData.put("user", reminder.getUser().getEmail());
-                String htmlData = htmlPdfGenerator.parseReportTemplate(templateData, "reminder-total");
-                try {
-                    this.mailService.sendHtmlEmail(reminder.getUser().getEmail(), htmlData, "Expense tracker reminder");
-                } catch (MessagingException e) {
-                    throw new MailSendFailedException("Failed sending email for reminder!");
-                }
-            }
+            reminder.setNextRun(LocalDate.now().plusDays(reminder.getRepeatRate()));
+            this.reminderRepository.save(reminder);
         }
 
     }
-
     @Override
-    public void updateReminders(List<Reminder> reminders) {
-
+    public Reminder findReminderByUserIdAndGroupId(Long userId, Long transactionGroupId) {
+        return this.reminderRepository.findReminderByUserIdAndTransactionGroupId(userId, transactionGroupId).orElse(null);
     }
 
 

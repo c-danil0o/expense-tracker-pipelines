@@ -8,11 +8,12 @@
     <style>
         body {margin: 20px; font-family: "Poppins", sans-serif;}
        .email-header {margin: 20px; text-align: center; color: gray;}
+        .email-body {padding: 10px; margin: 3px; border-radius: 10px; background-color: gray;}
 
     </style></head>
 <body>
 <div class="email-header">
-    <span th:text="'Budget cap exceeded for' + ${category}"></span>
+    <span th:text="'Budget cap exceeded for ' + ${category}"></span>
 </div>
 <div class="email-body">
     <span th:text="'You have exceeded budget cap for category: ' + ${category} + '.'"></span>

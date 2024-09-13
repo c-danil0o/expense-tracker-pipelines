@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
@@ -30,7 +31,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
             "AND user.userId = :userId " +
             "AND t.timestamp BETWEEN :startDate AND :endDate"
     )
-    Double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate);
+    Double getTotalSpentForUserInTimePeriod(Long userId, LocalDateTime startDate, LocalDateTime endDate);
 
 
     @Query("SELECT SUM(t.amount) AS totalSpent " +
@@ -42,5 +43,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
             "AND tg.id = :transactionGroupId " +
             "AND t.timestamp BETWEEN :startDate AND :endDate"
     )
-    Double getTotalSpentForUserInTimePeriodForTransactionGroup(Long userId, LocalDate startDate, LocalDate endDate, Long transactionGroupId);
+    Double getTotalSpentForUserInTimePeriodForTransactionGroup(Long userId, LocalDateTime startDate, LocalDateTime endDate, Long transactionGroupId);
 }

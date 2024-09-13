@@ -1,13 +1,18 @@
 package com.example.tracker.service;
 
 import com.example.tracker.dto.ReminderDTO;
+import com.example.tracker.dto.TransactionGroupDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
+import com.example.tracker.exceptions.TransactionGroupNotFoundException;
 import com.example.tracker.mapper.ReminderMapper;
 import com.example.tracker.model.Reminder;
+import com.example.tracker.model.TransactionGroup;
 import com.example.tracker.model.User;
 import com.example.tracker.repository.ReminderRepository;
-import com.example.tracker.repository.UserRepository;
 import com.example.tracker.service.interfaces.ReminderService;
+import com.example.tracker.service.interfaces.TransactionService;
+import com.example.tracker.service.interfaces.UserService;
+import com.example.tracker.utils.BudgetCapExceed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +24,8 @@ import java.util.List;
 public class ReminderServiceImpl implements ReminderService {
 
     private final ReminderRepository reminderRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final TransactionService transactionService;
     private final ReminderMapper reminderMapper;
     private final MailService mailService;
 
@@ -35,19 +41,22 @@ public class ReminderServiceImpl implements ReminderService {
 
     @Override
     public ReminderDTO save(ReminderDTO reminderDTO) {
-        User user =  this.userRepository.findById(reminderDTO.getUserId()).orElseThrow(() -> new ElementNotFoundException("User with given id not found!"));
+        User user =  this.userService.findEntityById(reminderDTO.getUserId());
         if (reminderDTO.getNextRun() == null){
             reminderDTO.setNextRun(LocalDate.now());
         }
-        Reminder savedReminder = this.reminderRepository.save(this.reminderMapper.fromReminderDTO(reminderDTO, user));
+        TransactionGroup group = this.transactionService.getGroupById(reminderDTO.getTransactionGroupId());
+        Reminder savedReminder = this.reminderRepository.save(this.reminderMapper.fromReminderDTO(reminderDTO, user, group));
         return this.reminderMapper.toReminderDTO(savedReminder);
     }
 
     @Override
     public ReminderDTO update(ReminderDTO reminderDTO) throws ElementNotFoundException {
-        User user =  this.userRepository.findById(reminderDTO.getUserId()).orElseThrow(() -> new ElementNotFoundException("User with given id not found!"));
-        Reminder reminder = this.reminderMapper.fromReminderDTO(reminderDTO, user);
+        User user =  this.userService.findEntityById(reminderDTO.getUserId());
+        TransactionGroup group = this.transactionService.getGroupById(reminderDTO.getTransactionGroupId());
+        Reminder reminder = this.reminderMapper.fromReminderDTO(reminderDTO, user, group);
         reminder.setId(reminderDTO.getId());
+
         Reminder savedReminder = this.reminderRepository.save(reminder);
         return this.reminderMapper.toReminderDTO(savedReminder);
     }
@@ -79,5 +88,17 @@ public class ReminderServiceImpl implements ReminderService {
         return this.reminderRepository.findReminderByUserIdAndTransactionGroupId(userId, transactionGroupId).orElse(null);
     }
 
+    @Override
+    public void sendNotificationIfBudgetCapExceeded(Long userId, Long transactionGroupId) {
+        Reminder reminder = this.findReminderByUserIdAndGroupId(userId, transactionGroupId);
+        if (reminder != null) {
+            double budgetCap = reminder.getGroup().getBudgetCap();
+            double spentAmount = this.transactionService.getTotalSpentForUserInTimePeriodForTransactionGroup(userId,
+                    reminder.getNextRun().minusDays(reminder.getRepeatRate()), reminder.getNextRun(), transactionGroupId);
+            if (budgetCap <= spentAmount)
+                this.mailService.sendBudgetCapReminder(new BudgetCapExceed(reminder.getUser().getEmail(), budgetCap, spentAmount, reminder.getGroup().getName()));
+        }
+
+    }
 
 }

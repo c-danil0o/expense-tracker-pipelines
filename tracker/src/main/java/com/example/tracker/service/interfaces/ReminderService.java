@@ -11,4 +11,6 @@ public interface ReminderService extends CrudService<ReminderDTO, Long> {
     void updateReminders(List<Reminder> reminders);
 
     Reminder findReminderByUserIdAndGroupId(Long userId, Long transactionGroupId);
+
+    void sendNotificationIfBudgetCapExceeded(Long userId, Long transactionGroupId);
 }

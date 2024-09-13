@@ -3,6 +3,7 @@ package com.example.tracker.service;
 import com.example.tracker.dto.TransactionDTO;
 import com.example.tracker.dto.TransactionGroupDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
+import com.example.tracker.exceptions.InvalidTransactionGroupException;
 import com.example.tracker.exceptions.TransactionGroupAlreadyExistsException;
 import com.example.tracker.exceptions.TransactionGroupNotFoundException;
 import com.example.tracker.filter.TransactionSpecification;
@@ -13,7 +14,6 @@ import com.example.tracker.repository.TransactionRepository;
 import com.example.tracker.service.interfaces.ReminderService;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
-import com.example.tracker.utils.BudgetCapExceed;
 import com.example.tracker.utils.EmailReminder;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +35,6 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionGroupRepository transactionGroupRepository;
     private final TransactionMapper transactionMapper;
     private final UserService userService;
-    private final ReminderService reminderService;
-    private final MailService mailService;
 
 
     public TransactionGroupDTO createGroup(TransactionGroupDTO transactionGroupDTO) throws TransactionGroupAlreadyExistsException {
@@ -49,13 +47,16 @@ public class TransactionServiceImpl implements TransactionService {
                 throw new TransactionGroupAlreadyExistsException("Group with given name already exists!");
             }
         }
+        if (transactionGroupDTO.getBudgetCap() != null && transactionGroupDTO.getUserId() == null)
+            throw new InvalidTransactionGroupException("Transaction group must contain user id when budgetCap is defined!");
+
         TransactionGroup savedTransactionGroup = this.transactionGroupRepository.save(this.transactionMapper.fromTransactionGroupDTO(transactionGroupDTO));
         return this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
     }
 
     @Override
-    public TransactionGroupDTO getGroupById(Long id) throws TransactionGroupNotFoundException {
-        return this.transactionMapper.toTransactionGroupDTO(this.transactionGroupRepository.findById(id).orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!")));
+    public TransactionGroup getGroupById(Long id) throws TransactionGroupNotFoundException {
+        return this.transactionGroupRepository.findById(id).orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
     }
 
     @Override
@@ -89,7 +90,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Double getTotalSpentForUserInTimePeriod(Long userId, LocalDate startDate, LocalDate endDate) {
-        return this.transactionRepository.getTotalSpentForUserInTimePeriod(userId, startDate, endDate);
+        return this.transactionRepository.getTotalSpentForUserInTimePeriod(userId, startDate.atTime(0,0), endDate.atTime(0,0));
     }
 
     @Override
@@ -103,7 +104,6 @@ public class TransactionServiceImpl implements TransactionService {
         TransactionGroup transactionGroup = this.transactionGroupRepository.findById(transactionDTO.getTransactionGroupId())
                 .orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
         Transaction savedTransaction = this.transactionRepository.save(this.transactionMapper.fromTransactionDTO(transactionDTO, user, transactionGroup));
-        this.sendNotificationIfBudgetCapExceeded(transactionDTO.getUserId(), transactionDTO.getTransactionGroupId());
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
@@ -117,7 +117,6 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = this.transactionMapper.fromTransactionDTO(newTransaction, user, transactionGroup);
         transaction.setId(newTransaction.getId());
         Transaction savedTransaction = this.transactionRepository.save(transaction);
-        this.sendNotificationIfBudgetCapExceeded(newTransaction.getUserId(), newTransaction.getTransactionGroupId());
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
@@ -142,18 +141,10 @@ public class TransactionServiceImpl implements TransactionService {
         }
         return emailReminders;
     }
-
-
-    private void sendNotificationIfBudgetCapExceeded(Long userId, Long transactionGroupId) {
-        Reminder reminder = this.reminderService.findReminderByUserIdAndGroupId(userId, transactionGroupId);
-        if (reminder != null) {
-            double budgetCap = this.transactionGroupRepository.findById(reminder.getGroup().getId()).orElseThrow(() ->
-                    new TransactionGroupNotFoundException("Transaction group not found!")).getBudgetCap();
-            double spentAmount = this.transactionRepository.getTotalSpentForUserInTimePeriodForTransactionGroup(userId,
-                    reminder.getNextRun().minusDays(reminder.getRepeatRate()), reminder.getNextRun(), transactionGroupId);
-            if (budgetCap <= spentAmount)
-                this.mailService.sendBudgetCapReminder(new BudgetCapExceed(reminder.getUser().getEmail(), budgetCap, spentAmount, reminder.getGroup().getName()));
-        }
-
+    @Override
+    public double getTotalSpentForUserInTimePeriodForTransactionGroup(Long userId, LocalDate startDate, LocalDate endDate, Long transactionGroupId){
+        return this.transactionRepository.getTotalSpentForUserInTimePeriodForTransactionGroup(userId, startDate.atTime(0,0), endDate.atTime(0,0), transactionGroupId);
     }
+
+
 }

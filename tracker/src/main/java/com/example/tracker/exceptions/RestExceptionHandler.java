@@ -80,4 +80,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
+
+    @ExceptionHandler(InvalidTransactionGroupException.class)
+    protected ResponseEntity<Object> handleInvalidTransactionGroup(
+            InvalidTransactionGroupException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
 }

@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class TransactionGroupDTO {
     private Long id;
-    private double budgetCap;
+    private Double budgetCap;
     private String name;
     private Long userId;
 

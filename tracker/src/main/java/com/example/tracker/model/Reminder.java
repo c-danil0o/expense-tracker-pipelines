@@ -23,6 +23,6 @@ public class Reminder {
     private LocalDate nextRun;
     private int repeatRate;
     // if transactionGroup is not null and reminder type is BudgetCap reminder is activated when adding expense transaction
-    @OneToOne()
+    @ManyToOne
     private TransactionGroup group;
 }

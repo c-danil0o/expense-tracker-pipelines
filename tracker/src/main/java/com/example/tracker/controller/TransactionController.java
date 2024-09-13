@@ -2,6 +2,8 @@ package com.example.tracker.controller;
 
 import com.example.tracker.dto.TransactionDTO;
 import com.example.tracker.dto.TransactionGroupDTO;
+import com.example.tracker.model.Transaction;
+import com.example.tracker.service.interfaces.ReminderService;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +20,14 @@ import java.util.List;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final ReminderService reminderService;
     private final UserService userService;
 
     @PostMapping(value = "/transaction", consumes = "application/json")
     public ResponseEntity<TransactionDTO> createTransaction(@RequestBody TransactionDTO transactionDto) {
-        return ResponseEntity.ok(this.transactionService.save(transactionDto));
+        TransactionDTO savedTransaction = this.transactionService.save(transactionDto);
+        this.reminderService.sendNotificationIfBudgetCapExceeded(savedTransaction.getUserId(), savedTransaction.getTransactionGroupId());
+        return ResponseEntity.ok(savedTransaction);
     }
 
     @PostMapping(value = "/group", consumes = "application/json")
@@ -33,7 +38,9 @@ public class TransactionController {
 
     @PutMapping(value = "/transaction")
     public ResponseEntity<TransactionDTO> updateTransaction(@RequestBody TransactionDTO transactionDTO) {
-        return ResponseEntity.ok(this.transactionService.update(transactionDTO));
+        TransactionDTO savedTransaction = this.transactionService.update(transactionDTO);
+        this.reminderService.sendNotificationIfBudgetCapExceeded(savedTransaction.getUserId(), savedTransaction.getTransactionGroupId());
+        return ResponseEntity.ok(savedTransaction);
     }
 
     @DeleteMapping(value = "/transaction/{id}")

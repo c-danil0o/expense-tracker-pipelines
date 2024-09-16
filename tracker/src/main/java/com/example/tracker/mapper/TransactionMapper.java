@@ -2,13 +2,9 @@ package com.example.tracker.mapper;
 
 import com.example.tracker.dto.TransactionDTO;
 import com.example.tracker.dto.TransactionGroupDTO;
-import com.example.tracker.exceptions.ElementNotFoundException;
-import com.example.tracker.exceptions.TransactionGroupNotFoundException;
 import com.example.tracker.model.Transaction;
 import com.example.tracker.model.TransactionGroup;
 import com.example.tracker.model.User;
-import com.example.tracker.repository.TransactionGroupRepository;
-import com.example.tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

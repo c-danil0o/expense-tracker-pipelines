@@ -6,14 +6,13 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
 public class HtmlPdfGenerator {
-    public String parseReportTemplate(Map<String, Object> data) {
+    public String parseReportTemplate(Map<String, Object> data, String templateName) {
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setPrefix("templates/");
         templateResolver.setSuffix(".html");
@@ -24,9 +23,9 @@ public class HtmlPdfGenerator {
 
         Context context = new Context();
         context.setVariables(data);
-
-        return templateEngine.process("report", context);
+        return templateEngine.process(templateName, context);
     }
+
 
 
     public void generatePdfFromHtml(String html) {

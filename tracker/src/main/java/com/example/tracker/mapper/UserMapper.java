@@ -17,6 +17,6 @@ public class UserMapper {
         return User.builder().userId(userDTO.getUserId()).firstName(userDTO.getFirstName()).
                 lastName(userDTO.getLastName()).email(userDTO.getEmail()).funds(userDTO.getFunds()).
                 reservedFunds(userDTO.getReservedFunds()).currency(userDTO.getCurrency()).
-                type(userDTO.getType()).build();
+                type(userDTO.getType()).password(userDTO.getPassword()).build();
     }
 }

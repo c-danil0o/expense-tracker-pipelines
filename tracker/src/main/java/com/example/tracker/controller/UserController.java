@@ -1,7 +1,11 @@
 package com.example.tracker.controller;
 
+import com.example.tracker.dto.LoginDTO;
 import com.example.tracker.dto.UserDTO;
+import com.example.tracker.model.User;
+import com.example.tracker.service.JwtService;
 import com.example.tracker.service.interfaces.UserService;
+import com.example.tracker.utils.AuthToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +18,7 @@ import java.util.List;
 @RequestMapping("api")
 public class UserController {
     private final UserService userService;
-
-    @PostMapping(value = "/user", consumes = "application/json")
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(this.userService.save(userDTO));
-    }
+    private final JwtService jwtService;
 
     @GetMapping(value = "/user/all")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
@@ -40,5 +40,19 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         this.userService.delete(userId);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/user/register")
+    public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO){
+        UserDTO newUser = this.userService.register(userDTO);
+        return ResponseEntity.ok(newUser);
+    }
+
+
+    @PostMapping(value = "/user/auth")
+    public ResponseEntity<AuthToken> loginUser(@RequestBody LoginDTO loginDTO){
+        User authenticatedUser = this.userService.login(loginDTO);
+        String jwt = this.jwtService.generateToken(authenticatedUser);
+        return ResponseEntity.ok(new AuthToken(jwt, this.jwtService.getExpirationTime()));
     }
 }

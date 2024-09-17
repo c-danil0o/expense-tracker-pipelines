@@ -88,4 +88,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
+
+    @ExceptionHandler(UserRegistrationException.class)
+    protected ResponseEntity<Object> handleInvalidUserRegistration(
+            UserRegistrationException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    protected ResponseEntity<Object> handleAuthFail(
+            AuthenticationFailedException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
 }

@@ -30,6 +30,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authz -> authz.requestMatchers("/api/user/register").permitAll().
                 requestMatchers("/api/user/auth").permitAll()
+                .requestMatchers("/api/notify").permitAll()
                 .requestMatchers("/api/reminder/**").hasRole("Premium")
                 .anyRequest().authenticated());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

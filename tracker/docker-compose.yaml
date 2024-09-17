@@ -1,0 +1,45 @@
+version: "3.7"
+services:
+ spring-boot:
+    build: .
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - springapimysql-net
+    environment:
+      MYSQL_HOST: mysqldb
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      EMAIL: ${EMAIL}
+      EMAIL_CODE: ${EMAIL_CODE}
+      SECRET_KEY : ${SECRET_KEY}
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+ mysqldb:
+  image: "mysql:8.0"
+  restart: always
+  ports:
+    - 3306:3306
+  expose:
+    - 3306
+  networks:
+    - springapimysql-net
+  volumes:
+    - my-db:/var/lib/mysql
+  environment:
+    MYSQL_DATABASE: expense-tracker
+    MYSQL_USER: user
+    MYSQL_PASSWORD: password
+    MYSQL_ROOT_PASSWORD: root
+  healthcheck:
+    test: [ "CMD-SHELL", "/usr/bin/mysql --user=user --password=password --execute \"SHOW DATABASES;\"" ]
+    interval: 10s
+    timeout: 10s
+    retries: 10
+networks:
+  springapimysql-net: 
+
+volumes:
+  my-db:

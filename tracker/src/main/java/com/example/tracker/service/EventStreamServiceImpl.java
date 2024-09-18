@@ -10,6 +10,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -22,15 +23,21 @@ public class EventStreamServiceImpl implements EventStreamService {
     private KafkaTemplate<String, GenericRecord> kafkaTemplate;
 
 
-    private GenericRecord generateAvroRecord(LocalDateTime timestamp, String type, String topic){
+    private GenericRecord generateAvroRecord(LocalDateTime timestamp, String type, String topic, String payload){
         String messageSchema = avroSchemaGenerator.getSchema();
         Schema schema = new Schema.Parser().parse(messageSchema);
         GenericRecord record = new GenericData.Record(schema);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        String user = ((User)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getEmail();
+        String user = null;
+        if (principal instanceof UserDetails) {
+            user = ((UserDetails)principal).getUsername();
+        } else {
+            user = principal.toString();
+        }
         String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
 
-        record.put("content", "123");
+        record.put("content", payload);
         record.put("timestamp", timestamp.toString());
         record.put("type", type);
         record.put("user_id", user);
@@ -40,8 +47,8 @@ public class EventStreamServiceImpl implements EventStreamService {
     }
 
     @Override
-    public void sendRecord(LocalDateTime timestamp, String type, String topic){
-        GenericRecord record = generateAvroRecord(timestamp, type, topic);
+    public void sendRecord(LocalDateTime timestamp, String type, String topic, String payload){
+        GenericRecord record = generateAvroRecord(timestamp, type, topic, payload);
         ProducerRecord<String, GenericRecord> kafkaRecord = new ProducerRecord<>(topic, null, record);
         this.kafkaTemplate.send(kafkaRecord);
 

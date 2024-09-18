@@ -24,6 +24,21 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic topic1() {
-        return new NewTopic("test", 1, (short) 1);
+        return new NewTopic("user", 1, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topic2() {
+        return new NewTopic("reminder", 3, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topic3() {
+        return new NewTopic("transaction", 5, (short) 1);
+    }
+
+    @Bean
+    public NewTopic topic4() {
+        return new NewTopic("savings", 2, (short) 1);
     }
 }

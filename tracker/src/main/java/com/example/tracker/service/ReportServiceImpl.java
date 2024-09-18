@@ -5,11 +5,13 @@ import com.example.tracker.exceptions.MailSendFailedException;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
 import com.example.tracker.repository.UserRepository;
+import com.example.tracker.service.interfaces.EventStreamService;
 import com.example.tracker.service.interfaces.ReportService;
 import com.example.tracker.utils.HtmlPdfGenerator;
 import com.example.tracker.utils.MonthData;
 import com.example.tracker.utils.ReportTableRow;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +35,7 @@ public class ReportServiceImpl implements ReportService {
     private final TransactionGroupRepository transactionGroupRepository;
     private final UserRepository userRepository;
     private final MailService mailService;
+    private final EventStreamService eventStreamService;
 
     @Override
     public String generateReport(Long userId, int year) {
@@ -74,6 +78,7 @@ public class ReportServiceImpl implements ReportService {
         return true;
     }
 
+    @Transactional
     @Override
     public ByteArrayResource downloadPdfReport(Long userId, int year) {
         String htmlData = this.generateReport(userId, year);
@@ -82,6 +87,7 @@ public class ReportServiceImpl implements ReportService {
         File file = new File("report.pdf");
         Path path = Paths.get(file.getAbsolutePath());
         try {
+            this.eventStreamService.sendRecord(LocalDateTime.now(), "Pdf_Report_DOWNLOAD", "report", null);
             return new ByteArrayResource(Files.readAllBytes(path));
         } catch (IOException e) {
             throw new RuntimeException(e);

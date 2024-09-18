@@ -80,7 +80,7 @@ public class ReminderServiceImpl implements ReminderService {
         if (this.reminderRepository.existsById(id)){
             Reminder reminder = this.reminderRepository.findById(id).orElse(null);
             this.reminderRepository.deleteById(id);
-            this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_UPDATED", "reminder", this.getReminderMetadata(reminder));
+            this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_DELETED", "reminder", this.getReminderMetadata(reminder));
         }else{
             throw new ElementNotFoundException("Reminder with given id not found!");
         }

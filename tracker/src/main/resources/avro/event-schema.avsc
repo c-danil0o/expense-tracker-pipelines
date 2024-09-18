@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "expense_tracker",
+  "namespace": "com.expensetracker.avro",
+  "fields": [
+    {"name": "content", "type":"string", "doc": "Message content"},
+    {"name": "timestamp", "type":"string", "doc": "Datetime when the message was generated"},
+    {"name": "type", "type":"string", "doc": "Event type"},
+    {"name": "user_id", "type":"string", "doc": "User email"},
+    {"name": "session_id", "type":"string", "doc": "User session id number"},
+    {"name": "topic", "type":"string", "doc": "Event topic"}
+  ]
+}

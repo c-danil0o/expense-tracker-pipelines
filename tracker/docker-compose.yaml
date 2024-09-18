@@ -4,7 +4,7 @@ services:
     build: .
     restart: always
     ports:
-      - 8080:8080
+      - 8085:8080
     networks:
       - springapimysql-net
     environment:
@@ -14,9 +14,46 @@ services:
       EMAIL: ${EMAIL}
       EMAIL_CODE: ${EMAIL_CODE}
       SECRET_KEY : ${SECRET_KEY}
+      KAFKA_BOOTSTRAP_SERVER: broker:29092
     depends_on:
       mysqldb:
         condition: service_healthy
+ broker:
+  image: apache/kafka:latest
+  container_name: broker
+  ports:
+   - 50012:50012
+#  expose:
+#    - 9096
+  networks:
+    - springapimysql-net
+  environment:
+    KAFKA_NODE_ID: 1
+    KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    KAFKA_PROCESS_ROLES: broker,controller
+    KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:9093,PLAINTEXT_HOST://broker:50012
+    KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:50012
+    KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+    KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:9093
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    KAFKA_NUM_PARTITIONS: 5
+
+ schema-registry:
+  image: bitnami/schema-registry
+  ports:
+    - "8081:8081"
+  depends_on:
+    - broker
+  environment:
+    - SCHEMA_REGISTRY_KAFKA_BROKERS=PLAINTEXT://broker:29092
+    - SCHEMA_REGISTRY_HOST_NAME=schema-registry
+    - SCHEMA_REGISTRY_LISTENERS=http://0.0.0.0:8081
+  networks:
+    - springapimysql-net
  mysqldb:
   image: "mysql:8.0"
   restart: always
@@ -38,6 +75,7 @@ services:
     interval: 10s
     timeout: 10s
     retries: 10
+
 networks:
   springapimysql-net: 
 

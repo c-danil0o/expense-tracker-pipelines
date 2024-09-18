@@ -11,6 +11,7 @@ import com.example.tracker.mapper.TransactionMapper;
 import com.example.tracker.model.*;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
+import com.example.tracker.service.interfaces.EventStreamService;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
 import com.example.tracker.utils.EmailReminder;
@@ -34,6 +35,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionGroupRepository transactionGroupRepository;
     private final TransactionMapper transactionMapper;
     private final UserService userService;
+    private final EventStreamService eventStreamService;
 
 
     public TransactionGroupDTO createGroup(TransactionGroupDTO transactionGroupDTO) throws TransactionGroupAlreadyExistsException {
@@ -50,8 +52,10 @@ public class TransactionServiceImpl implements TransactionService {
             throw new InvalidTransactionGroupException("Transaction group must contain user id when budgetCap is defined!");
 
         TransactionGroup savedTransactionGroup = this.transactionGroupRepository.save(this.transactionMapper.fromTransactionGroupDTO(transactionGroupDTO));
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Group_ADDED", "test");
         return this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
     }
+
 
     @Override
     public TransactionGroup getGroupById(Long id) throws TransactionGroupNotFoundException {

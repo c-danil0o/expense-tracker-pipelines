@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-@Entity
+@Entity(name = "raw_event_bronze")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

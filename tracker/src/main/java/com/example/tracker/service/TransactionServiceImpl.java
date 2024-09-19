@@ -1,5 +1,6 @@
 package com.example.tracker.service;
 
+import com.eclipsesource.json.JsonObject;
 import com.example.tracker.dto.TransactionDTO;
 import com.example.tracker.dto.TransactionGroupDTO;
 import com.example.tracker.exceptions.ElementNotFoundException;
@@ -11,10 +12,12 @@ import com.example.tracker.mapper.TransactionMapper;
 import com.example.tracker.model.*;
 import com.example.tracker.repository.TransactionGroupRepository;
 import com.example.tracker.repository.TransactionRepository;
+import com.example.tracker.service.interfaces.EventStreamService;
 import com.example.tracker.service.interfaces.TransactionService;
 import com.example.tracker.service.interfaces.UserService;
 import com.example.tracker.utils.EmailReminder;
 import io.micrometer.common.util.StringUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +37,11 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionGroupRepository transactionGroupRepository;
     private final TransactionMapper transactionMapper;
     private final UserService userService;
+    private final EventStreamService eventStreamService;
 
 
+    @Transactional
+    @Override
     public TransactionGroupDTO createGroup(TransactionGroupDTO transactionGroupDTO) throws TransactionGroupAlreadyExistsException {
         if (transactionGroupDTO.getUserId() == null) {
             if (this.transactionGroupRepository.getByName(transactionGroupDTO.getName()) != null) {
@@ -50,8 +56,10 @@ public class TransactionServiceImpl implements TransactionService {
             throw new InvalidTransactionGroupException("Transaction group must contain user id when budgetCap is defined!");
 
         TransactionGroup savedTransactionGroup = this.transactionGroupRepository.save(this.transactionMapper.fromTransactionGroupDTO(transactionGroupDTO));
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Group_ADDED", "transaction", transactionGroupDTO.getName() + "-" + transactionGroupDTO.getBudgetCap());
         return this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
     }
+
 
     @Override
     public TransactionGroup getGroupById(Long id) throws TransactionGroupNotFoundException {
@@ -63,6 +71,29 @@ public class TransactionServiceImpl implements TransactionService {
         return this.transactionRepository.findAll().stream().map(this.transactionMapper::toTransactionDTO).toList();
     }
 
+    private String formatTransactionQuery(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
+                                          String category, String status){
+        JsonObject json = new JsonObject();
+        json.add("startDate", startDate.toString());
+        json.add("endDate", endDate.toString());
+        json.add("type", type);
+        json.add("currency", currency);
+        json.add("category", category);
+        json.add("status", status);
+        return json.toString();
+    }
+
+    private String getTransactionMetadata(Transaction transaction){
+        JsonObject json = new JsonObject();
+        json.add("type", transaction.getType().toString());
+        json.add("currency", transaction.getCurrency());
+        json.add("amount", transaction.getAmount());
+        json.add("status", transaction.getStatus().toString());
+        json.add("category", transaction.getTransactionGroup().getName());
+        return json.toString();
+    }
+
+    @Transactional
     @Override
     public List<TransactionDTO> query(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
                                       String category, String status, Integer page, Integer pageSize, String sortParam) {
@@ -83,7 +114,10 @@ public class TransactionServiceImpl implements TransactionService {
         } else {
             pageable = Pageable.unpaged();
         }
-        return this.transactionRepository.findAll(filters, pageable).stream().map(this.transactionMapper::toTransactionDTO).toList();
+        List<TransactionDTO> result =this.transactionRepository.findAll(filters, pageable).stream().map(this.transactionMapper::toTransactionDTO).toList();
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Query_EXECUTED", "transaction",
+                this.formatTransactionQuery(startDate, endDate, type, currency, category, status));
+        return result;
 
     }
 
@@ -100,15 +134,18 @@ public class TransactionServiceImpl implements TransactionService {
         return this.transactionMapper.toTransactionDTO(this.transactionRepository.findById(transactionId).orElseThrow(() -> new ElementNotFoundException("No such element with given id!")));
     }
 
+    @Transactional
     @Override
     public TransactionDTO save(TransactionDTO transactionDTO) {
         User user = this.userService.findEntityById(transactionDTO.getUserId());
         TransactionGroup transactionGroup = this.transactionGroupRepository.findById(transactionDTO.getTransactionGroupId())
                 .orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
         Transaction savedTransaction = this.transactionRepository.save(this.transactionMapper.fromTransactionDTO(transactionDTO, user, transactionGroup));
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_CREATED", "transaction", this.getTransactionMetadata(savedTransaction));
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
+    @Transactional
     @Override
     public TransactionDTO update(TransactionDTO newTransaction) throws ElementNotFoundException {
         User user = this.userService.findEntityById(newTransaction.getUserId());
@@ -119,13 +156,16 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = this.transactionMapper.fromTransactionDTO(newTransaction, user, transactionGroup);
         transaction.setId(newTransaction.getId());
         Transaction savedTransaction = this.transactionRepository.save(transaction);
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_UPDATED", "transaction", this.getTransactionMetadata(savedTransaction));
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
     @Override
     public void delete(Long transactionId) throws ElementNotFoundException {
         if (this.transactionRepository.existsById(transactionId)) {
+            Transaction transaction = this.transactionRepository.findById(transactionId).orElse(null);
             this.transactionRepository.deleteById(transactionId);
+            this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_DELETED", "transaction", this.getTransactionMetadata(transaction));
         } else {
             throw new ElementNotFoundException("No such element with given ID!");
         }

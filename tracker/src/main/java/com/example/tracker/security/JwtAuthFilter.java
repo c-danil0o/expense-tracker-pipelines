@@ -52,7 +52,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
         }catch (Exception e){
-            throw new AuthenticationFailedException("Unauthorized user. Token not valid!" + e.getMessage());
+            throw new RuntimeException(e);
+//            throw new AuthenticationFailedException("Unauthorized user. Token not valid!" + e.getMessage());
         }
 
     }

@@ -32,6 +32,7 @@ public class ListenerService {
                 client_info(client_info).
                 timestamp(record.get("timestamp").toString()).
                 topic(record.get("topic").toString()).
+                feature_type(record.get("feature_type").toString()).
                 build();
         this.eventRepository.save(event);
     }

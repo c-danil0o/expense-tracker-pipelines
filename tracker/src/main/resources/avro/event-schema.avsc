@@ -14,6 +14,7 @@
     {"name": "type", "type":"string", "doc": "Event type"},
     {"name": "user_id", "type":"string", "doc": "User email"},
     {"name": "session_id", "type":"string", "doc": "User session id number"},
+    {"name": "feature_type", "type":"string", "doc": "Basic/Premium"},
     {"name": "topic", "type":"string", "doc": "Event topic"}
   ]
 }

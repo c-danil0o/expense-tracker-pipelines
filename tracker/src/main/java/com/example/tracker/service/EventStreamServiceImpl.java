@@ -1,7 +1,5 @@
 package com.example.tracker.service;
 
-import com.eclipsesource.json.JsonObject;
-import com.example.tracker.model.User;
 import com.example.tracker.service.interfaces.EventStreamService;
 import com.example.tracker.utils.UserClientContext;
 import com.example.tracker.utils.kafka.AvroSchemaGenerator;
@@ -12,7 +10,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,7 +26,7 @@ public class EventStreamServiceImpl implements EventStreamService {
     private KafkaTemplate<String, GenericRecord> kafkaTemplate;
 
 
-    private GenericRecord generateAvroRecord(LocalDateTime timestamp, String type, String topic, String payload) throws JsonProcessingException {
+    private GenericRecord generateAvroRecord(LocalDateTime timestamp, String type, String topic, String payload, String featureType) throws JsonProcessingException {
         String messageSchema = avroSchemaGenerator.getSchema();
         Schema schema = new Schema.Parser().parse(messageSchema);
         GenericRecord record = new GenericData.Record(schema);
@@ -47,6 +44,7 @@ public class EventStreamServiceImpl implements EventStreamService {
 
 
         record.put("content", payload);
+        record.put("feature_type", featureType);
         record.put("client_info", objectMapper.writeValueAsString(clientInfo));
         record.put("timestamp", timestamp.toString());
         record.put("type", type);
@@ -57,10 +55,10 @@ public class EventStreamServiceImpl implements EventStreamService {
     }
 
     @Override
-    public void sendRecord(LocalDateTime timestamp, String type, String topic, String payload){
+    public void sendRecord(LocalDateTime timestamp, String type, String topic, String payload, String featureType){
         GenericRecord record = null;
         try {
-            record = generateAvroRecord(timestamp, type, topic, payload);
+            record = generateAvroRecord(timestamp, type, topic, payload, featureType);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

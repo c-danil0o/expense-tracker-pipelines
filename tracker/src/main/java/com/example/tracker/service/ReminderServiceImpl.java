@@ -58,7 +58,7 @@ public class ReminderServiceImpl implements ReminderService {
         }
         TransactionGroup group = this.transactionService.getGroupById(reminderDTO.getTransactionGroupId());
         Reminder savedReminder = this.reminderRepository.save(this.reminderMapper.fromReminderDTO(reminderDTO, user, group));
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_CREATED", "reminder",this.getReminderMetadata(savedReminder));
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_CREATED", "reminder",this.getReminderMetadata(savedReminder), "PREMIUM");
         return this.reminderMapper.toReminderDTO(savedReminder);
     }
 
@@ -71,7 +71,7 @@ public class ReminderServiceImpl implements ReminderService {
 
         Reminder savedReminder = this.reminderRepository.save(reminder);
 
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_UPDATED", "reminder",this.getReminderMetadata(savedReminder));
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_UPDATED", "reminder",this.getReminderMetadata(savedReminder), "PREMIUM");
         return this.reminderMapper.toReminderDTO(savedReminder);
     }
 
@@ -80,7 +80,7 @@ public class ReminderServiceImpl implements ReminderService {
         if (this.reminderRepository.existsById(id)){
             Reminder reminder = this.reminderRepository.findById(id).orElse(null);
             this.reminderRepository.deleteById(id);
-            this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_DELETED", "reminder", this.getReminderMetadata(reminder));
+            this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_DELETED", "reminder", this.getReminderMetadata(reminder), "PREMIUM");
         }else{
             throw new ElementNotFoundException("Reminder with given id not found!");
         }
@@ -114,7 +114,7 @@ public class ReminderServiceImpl implements ReminderService {
             if (budgetCap <= spentAmount) {
                 this.mailService.sendBudgetCapReminder(new BudgetCapExceed(reminder.getUser().getEmail(), budgetCap, spentAmount, reminder.getGroup().getName()));
 
-                this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_Budget_Cap_Exceeded_EXECUTED", "reminder","groupName: " + reminder.getGroup().getName());
+                this.eventStreamService.sendRecord(LocalDateTime.now(), "Reminder_Budget_Cap_Exceeded_EXECUTED", "reminder","groupName: " + reminder.getGroup().getName(), "PREMIUM");
             }
         }
 

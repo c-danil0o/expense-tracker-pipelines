@@ -19,4 +19,5 @@ public class Event {
     private String user_id;
     private String session_id;
     private String topic;
+    private String feature_type;
 }

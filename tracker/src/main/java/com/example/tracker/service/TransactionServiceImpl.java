@@ -56,7 +56,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new InvalidTransactionGroupException("Transaction group must contain user id when budgetCap is defined!");
 
         TransactionGroup savedTransactionGroup = this.transactionGroupRepository.save(this.transactionMapper.fromTransactionGroupDTO(transactionGroupDTO));
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Group_ADDED", "transaction", transactionGroupDTO.getName() + "-" + transactionGroupDTO.getBudgetCap());
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Group_ADDED", "transaction", transactionGroupDTO.getName() + "-" + transactionGroupDTO.getBudgetCap(), "BASIC");
         return this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
     }
 
@@ -116,7 +116,7 @@ public class TransactionServiceImpl implements TransactionService {
         }
         List<TransactionDTO> result =this.transactionRepository.findAll(filters, pageable).stream().map(this.transactionMapper::toTransactionDTO).toList();
         this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Query_EXECUTED", "transaction",
-                this.formatTransactionQuery(startDate, endDate, type, currency, category, status));
+                this.formatTransactionQuery(startDate, endDate, type, currency, category, status), "BASIC");
         return result;
 
     }
@@ -141,7 +141,7 @@ public class TransactionServiceImpl implements TransactionService {
         TransactionGroup transactionGroup = this.transactionGroupRepository.findById(transactionDTO.getTransactionGroupId())
                 .orElseThrow(() -> new TransactionGroupNotFoundException("Transaction group with given id doesn't exist!"));
         Transaction savedTransaction = this.transactionRepository.save(this.transactionMapper.fromTransactionDTO(transactionDTO, user, transactionGroup));
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_CREATED", "transaction", this.getTransactionMetadata(savedTransaction));
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_CREATED", "transaction", this.getTransactionMetadata(savedTransaction), "BASIC");
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
@@ -156,7 +156,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = this.transactionMapper.fromTransactionDTO(newTransaction, user, transactionGroup);
         transaction.setId(newTransaction.getId());
         Transaction savedTransaction = this.transactionRepository.save(transaction);
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_UPDATED", "transaction", this.getTransactionMetadata(savedTransaction));
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_UPDATED", "transaction", this.getTransactionMetadata(savedTransaction),"BASIC");
         return this.transactionMapper.toTransactionDTO(savedTransaction);
     }
 
@@ -165,7 +165,7 @@ public class TransactionServiceImpl implements TransactionService {
         if (this.transactionRepository.existsById(transactionId)) {
             Transaction transaction = this.transactionRepository.findById(transactionId).orElse(null);
             this.transactionRepository.deleteById(transactionId);
-            this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_DELETED", "transaction", this.getTransactionMetadata(transaction));
+            this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_DELETED", "transaction", this.getTransactionMetadata(transaction), "BASIC");
         } else {
             throw new ElementNotFoundException("No such element with given ID!");
         }

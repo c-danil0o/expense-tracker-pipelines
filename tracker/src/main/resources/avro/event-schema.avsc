@@ -6,6 +6,10 @@
     {"name": "content", "type":["null","string"], "doc": "Message content",
       "default": null
     },
+
+    {"name": "client_info", "type":["null","string"], "doc": "Client info",
+      "default": null
+    },
     {"name": "timestamp", "type":"string", "doc": "Datetime when the message was generated"},
     {"name": "type", "type":"string", "doc": "Event type"},
     {"name": "user_id", "type":"string", "doc": "User email"},

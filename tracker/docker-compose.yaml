@@ -15,22 +15,23 @@ services:
       EMAIL_CODE: ${EMAIL_CODE}
       SECRET_KEY : ${SECRET_KEY}
       KAFKA_BOOTSTRAP_SERVER: broker:29092
-      SCHEMA_REGISTRY: schema-registry:8081
+      SCHEMA_REGISTRY_SERVER: schema-registry:8081
     depends_on:
       mysqldb:
         condition: service_healthy
 
-# consumer:
-#   build: ../consumer/.
-#   restart: always
-#   ports:
-#     - 8082:8082
-#   networks:
-#     - springapimysql-net
-#   environment:
-#     KAFKA_BOOTSTRAP_SERVER: broker:29092
-#   depends_on:
-#     - broker
+ consumer:
+   build: ../consumer/.
+   restart: always
+   ports:
+     - 8082:8082
+   networks:
+     - springapimysql-net
+   environment:
+     KAFKA_BOOTSTRAP_SERVER: broker:29092
+     SCHEMA_REGISTRY_SERVER: schema-registry:8081
+   depends_on:
+     - broker
  broker:
   image: apache/kafka:latest
   container_name: broker

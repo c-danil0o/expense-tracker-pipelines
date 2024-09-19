@@ -30,6 +30,9 @@ services:
    environment:
      KAFKA_BOOTSTRAP_SERVER: broker:29092
      SCHEMA_REGISTRY_SERVER: schema-registry:8081
+     MYSQL_HOST: mysqldb
+     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+     DATABASE_USERNAME: ${DATABASE_USERNAME}
    depends_on:
      - broker
  broker:
@@ -80,7 +83,6 @@ services:
   volumes:
     - my-db:/var/lib/mysql
   environment:
-    MYSQL_DATABASE: expense-tracker
     MYSQL_USER: user
     MYSQL_PASSWORD: password
     MYSQL_ROOT_PASSWORD: root

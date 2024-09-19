@@ -1,54 +1,40 @@
 package com.expense.consumer.service;
 
+import com.expense.consumer.model.Event;
+import com.expense.consumer.repository.EventRepository;
+import lombok.AllArgsConstructor;
 import org.apache.avro.generic.GenericRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class ListenerService {
-    @KafkaListener(topics = "transaction", groupId = "cons", containerFactory = "kafkaRecordListenerContainerFactory")
-    public void listenTransactions(GenericRecord record){
 
-        System.out.println("Content " + record.get("content"));
-        System.out.println("Client info " + record.get("client_info"));
-        System.out.println("Timestamp " + record.get("timestamp"));
-        System.out.println("User " + record.get("user_id"));
-        System.out.println("Session " + record.get("session_id"));
-        System.out.println("Type " + record.get("type"));
-        System.out.println("Topic " + record.get("topic"));
+    private final EventRepository eventRepository;
+
+    @KafkaListener(topics = {"transaction", "user", "reminder", "savings"}, groupId = "cons", containerFactory = "kafkaRecordListenerContainerFactory")
+    public void listenToEvents(GenericRecord record){
+        String content = null;
+        String client_info = null;
+        if (record.get("content") != null)
+            content = record.get("content").toString();
+
+        if (record.get("client_info") != null)
+            client_info = record.get("client_info").toString();
+
+        Event event = Event.builder().
+                type(record.get("type").toString()).
+                content(content).
+                user_id(record.get("user_id").toString()).
+                session_id(record.get("session_id").toString()).
+                client_info(client_info).
+                timestamp(record.get("timestamp").toString()).
+                topic(record.get("topic").toString()).
+                build();
+        this.eventRepository.save(event);
     }
 
-    @KafkaListener(topics = "user", groupId = "cons", containerFactory = "kafkaRecordListenerContainerFactory")
-    public void listenUser(GenericRecord record){
-        System.out.println("Content " + record.get("content"));
-        System.out.println("Client info " + record.get("client_info"));
-        System.out.println("Timestamp " + record.get("timestamp"));
-        System.out.println("User " + record.get("user_id"));
-        System.out.println("Session " + record.get("session_id"));
-        System.out.println("Type " + record.get("type"));
-        System.out.println("Topic " + record.get("topic"));
-    }
-
-    @KafkaListener(topics = "reminder", groupId = "cons", containerFactory = "kafkaRecordListenerContainerFactory")
-    public void listenReminder(GenericRecord record){
-        System.out.println("Content " + record.get("content"));
-        System.out.println("Timestamp " + record.get("timestamp"));
-        System.out.println("Client info " + record.get("client_info"));
-        System.out.println("User " + record.get("user_id"));
-        System.out.println("Session " + record.get("session_id"));
-        System.out.println("Type " + record.get("type"));
-        System.out.println("Topic " + record.get("topic"));
-    }
-
-    @KafkaListener(topics = "savings", groupId = "cons", containerFactory = "kafkaRecordListenerContainerFactory")
-    public void listenSavings(GenericRecord record){
-        System.out.println("Content " + record.get("content"));
-        System.out.println("Timestamp " + record.get("timestamp"));
-        System.out.println("Client info " + record.get("client_info"));
-        System.out.println("User " + record.get("user_id"));
-        System.out.println("Session " + record.get("session_id"));
-        System.out.println("Type " + record.get("type"));
-        System.out.println("Topic " + record.get("topic"));
-    }
 
 }

@@ -43,12 +43,12 @@ public class EventStreamServiceImpl implements EventStreamService {
         ObjectMapper objectMapper = new ObjectMapper();
 
 
-        record.put("content", payload);
+        record.put("payload", payload);
         record.put("feature_type", featureType);
         record.put("client_info", objectMapper.writeValueAsString(clientInfo));
         record.put("timestamp", timestamp.toString());
         record.put("type", type);
-        record.put("user_id", user);
+        record.put("user_email", user);
         record.put("session_id", sessionId);
         record.put("topic", topic);
         return record;

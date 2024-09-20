@@ -18,16 +18,16 @@ public class ListenerService {
     public void listenToEvents(GenericRecord record){
         String content = null;
         String client_info = null;
-        if (record.get("content") != null)
-            content = record.get("content").toString();
+        if (record.get("payload") != null)
+            content = record.get("payload").toString();
 
         if (record.get("client_info") != null)
             client_info = record.get("client_info").toString();
 
         Event event = Event.builder().
                 type(record.get("type").toString()).
-                content(content).
-                user_id(record.get("user_id").toString()).
+                payload(content).
+                user_email(record.get("user_id").toString()).
                 session_id(record.get("session_id").toString()).
                 client_info(client_info).
                 timestamp(record.get("timestamp").toString()).

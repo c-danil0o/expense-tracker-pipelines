@@ -10,13 +10,13 @@ import lombok.Data;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long eventId;
+    private Long event_id;
 
-    private String content;
+    private String payload;
     private String client_info;
     private String timestamp;
     private String type;
-    private String user_id;
+    private String user_email;
     private String session_id;
     private String topic;
     private String feature_type;

@@ -27,7 +27,7 @@ public class ListenerService {
         Event event = Event.builder().
                 type(record.get("type").toString()).
                 payload(content).
-                user_email(record.get("user_id").toString()).
+                user_email(record.get("user_email").toString()).
                 session_id(record.get("session_id").toString()).
                 client_info(client_info).
                 timestamp(record.get("timestamp").toString()).

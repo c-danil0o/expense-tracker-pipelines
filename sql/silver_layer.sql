@@ -41,7 +41,6 @@ CREATE TABLE reminder_event (
 CREATE TABLE request_event (
     ID BIGINT AUTO_INCREMENT PRIMARY KEY,
     event_type VARCHAR(255) NOT NULL,
-    geolocation VARCHAR(255),
     ip_address VARCHAR(255),
     user_agent VARCHAR(255),
     os_family VARCHAR(255),

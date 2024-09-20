@@ -1,5 +1,15 @@
+USE `expense-tracker-warehouse`;
+
 DELIMITER $$
-CREATE TRIGGER after_raw_event_insert_user
+
+USE `expense-tracker-warehouse`$$
+DROP TRIGGER IF EXISTS `expense-tracker-warehouse`.`after_raw_event_insert` $$
+DELIMITER ;
+
+
+
+DELIMITER $$
+CREATE TRIGGER after_raw_event_insert
 AFTER INSERT ON raw_event_bronze
 FOR EACH ROW
 BEGIN
@@ -15,5 +25,14 @@ BEGIN
     ELSE
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Unknown event type in RawEvent';
     END IF;
+		INSERT INTO request_event (event_type, timestamp, ip_address, user_agent, os_family, device_family, feature_type, event_id)
+		VALUES (NEW.type, NEW.timestamp, 
+			JSON_UNQUOTE(JSON_EXTRACT(NEW.client_info, '$.remote_address')),
+            JSON_UNQUOTE(JSON_EXTRACT(NEW.client_info, '$.userAgent_family')),
+            JSON_UNQUOTE(JSON_EXTRACT(NEW.client_info, '$.os_family')),
+            JSON_UNQUOTE(JSON_EXTRACT(NEW.client_info, '$.device_family')),
+            NEW.feature_type,
+            NEW.event_id
+            );
 END$$
 DELIMITER ;

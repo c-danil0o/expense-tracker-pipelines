@@ -7,10 +7,14 @@ DROP TABLE IF EXISTS dim_currency;
 DROP TABLE IF EXISTS dim_country;
 DROP TABLE IF EXISTS dim_transaction_group;
 DROP TABLE IF EXISTS dim_feature;
-DROP TABLE IF EXISTS dim_user_agent;
 DROP TABLE IF EXISTS dim_request;
+DROP TABLE IF EXISTS dim_event_type;
 
-
+CREATE TABLE dim_event_type (
+    ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
+    name VARCHAR(255) NOT NULL,
+	code VARCHAR(255) NOT NULL
+);
 
 CREATE TABLE dim_currency (
     ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
@@ -21,7 +25,8 @@ CREATE TABLE dim_currency (
 CREATE TABLE dim_transaction_group (
     ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
     name VARCHAR(255) NOT NULL,
-    budget_cap DECIMAL(10,2)
+    user_email VARCHAR(255) NOT NULL,
+    budget_cap DECIMAL(15,3)
 );
 
 CREATE TABLE dim_country (
@@ -33,15 +38,12 @@ CREATE TABLE dim_country (
 CREATE TABLE dim_feature (
     ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
     name VARCHAR(255) NOT NULL,
-    event_type VARCHAR(255) NOT NULL,
-    feature_type VARCHAR(255) NOT NULL
+    event_type_id BINARY(16) NOT NULL,
+    feature_type VARCHAR(255) NOT NULL,
+    CONSTRAINT FK_dim_feature_event_type_id FOREIGN KEY (event_type_id)
+        REFERENCES dim_event_type(ID)
 );
 
-CREATE TABLE dim_user_agent (
-    ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
-    name VARCHAR(255) NOT NULL,
-    full_name VARCHAR(255) NOT NULL
-);
 
 
 CREATE TABLE dim_request (
@@ -70,7 +72,7 @@ CREATE TABLE fact_request (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     request_id BINARY(16) NOT NULL,
     country_id BINARY(16),
-    user_agent_id BINARY(16),
+    user_agent VARCHAR(255),
 	CONSTRAINT FK_fact_request_request_id FOREIGN KEY (request_id)
         REFERENCES dim_request(ID),
 	CONSTRAINT FK_fact_request_country_id FOREIGN KEY (country_id)

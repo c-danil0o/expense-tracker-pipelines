@@ -56,7 +56,8 @@ public class TransactionServiceImpl implements TransactionService {
             throw new InvalidTransactionGroupException("Transaction group must contain user id when budgetCap is defined!");
 
         TransactionGroup savedTransactionGroup = this.transactionGroupRepository.save(this.transactionMapper.fromTransactionGroupDTO(transactionGroupDTO));
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Group_ADDED", "transaction", transactionGroupDTO.getName() + "-" + transactionGroupDTO.getBudgetCap(), "BASIC");
+        String budgetCap = "";
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "Transaction_Group_CREATED", "transaction", transactionGroupDTO.getName() + "-" + transactionGroupDTO.getBudgetCapSafe(), "BASIC");
         return this.transactionMapper.toTransactionGroupDTO(savedTransactionGroup);
     }
 
@@ -74,12 +75,18 @@ public class TransactionServiceImpl implements TransactionService {
     private String formatTransactionQuery(LocalDateTime startDate, LocalDateTime endDate, String type, String currency,
                                           String category, String status){
         JsonObject json = new JsonObject();
-        json.add("startDate", startDate.toString());
-        json.add("endDate", endDate.toString());
-        json.add("type", type);
-        json.add("currency", currency);
-        json.add("category", category);
-        json.add("status", status);
+        if (startDate != null)
+            json.add("startDate", startDate.toString());
+        if (endDate != null)
+            json.add("endDate", endDate.toString());
+        if (type != null)
+            json.add("type", type);
+        if (currency != null)
+            json.add("currency", currency);
+        if (category != null)
+            json.add("category", category);
+        if (status != null)
+            json.add("status", status);
         return json.toString();
     }
 

@@ -1,8 +1,10 @@
 package com.example.tracker.service;
 
-import com.example.tracker.model.User;
 import com.example.tracker.service.interfaces.EventStreamService;
+import com.example.tracker.utils.UserClientContext;
 import com.example.tracker.utils.kafka.AvroSchemaGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -23,7 +26,7 @@ public class EventStreamServiceImpl implements EventStreamService {
     private KafkaTemplate<String, GenericRecord> kafkaTemplate;
 
 
-    private GenericRecord generateAvroRecord(LocalDateTime timestamp, String type, String topic, String payload){
+    private GenericRecord generateAvroRecord(LocalDateTime timestamp, String type, String topic, String payload, String featureType) throws JsonProcessingException {
         String messageSchema = avroSchemaGenerator.getSchema();
         Schema schema = new Schema.Parser().parse(messageSchema);
         GenericRecord record = new GenericData.Record(schema);
@@ -36,19 +39,29 @@ public class EventStreamServiceImpl implements EventStreamService {
             user = principal.toString();
         }
         String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+        Map<String, String> clientInfo = UserClientContext.getCurrentContext();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        record.put("content", payload);
+
+        record.put("payload", payload);
+        record.put("feature_type", featureType);
+        record.put("client_info", objectMapper.writeValueAsString(clientInfo));
         record.put("timestamp", timestamp.toString());
         record.put("type", type);
-        record.put("user_id", user);
+        record.put("user_email", user);
         record.put("session_id", sessionId);
         record.put("topic", topic);
         return record;
     }
 
     @Override
-    public void sendRecord(LocalDateTime timestamp, String type, String topic, String payload){
-        GenericRecord record = generateAvroRecord(timestamp, type, topic, payload);
+    public void sendRecord(LocalDateTime timestamp, String type, String topic, String payload, String featureType){
+        GenericRecord record = null;
+        try {
+            record = generateAvroRecord(timestamp, type, topic, payload, featureType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         ProducerRecord<String, GenericRecord> kafkaRecord = new ProducerRecord<>(topic, null, record);
         this.kafkaTemplate.send(kafkaRecord);
 

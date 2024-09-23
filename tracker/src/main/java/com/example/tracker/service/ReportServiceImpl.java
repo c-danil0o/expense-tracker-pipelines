@@ -87,7 +87,7 @@ public class ReportServiceImpl implements ReportService {
         File file = new File("report.pdf");
         Path path = Paths.get(file.getAbsolutePath());
         try {
-            this.eventStreamService.sendRecord(LocalDateTime.now(), "Pdf_Report_DOWNLOAD", "report", null);
+            this.eventStreamService.sendRecord(LocalDateTime.now(), "Pdf_Report_DOWNLOAD", "report", null, "BASIC");
             return new ByteArrayResource(Files.readAllBytes(path));
         } catch (IOException e) {
             throw new RuntimeException(e);

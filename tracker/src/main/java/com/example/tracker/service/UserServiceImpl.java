@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
            throw new UserRegistrationException("User with given email already exists!");
         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
         userDTO.setPassword(encodedPassword);
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "User_Register_EXECUTED", "user", null);
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "User_Register_EXECUTED", "user", null, "BASIC");
         return this.userMapper.toUserDTO(this.userRepository.save(this.userMapper.fromUserDTO(userDTO)));
     }
 
@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User login(LoginDTO loginDTO) {
         this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
-        this.eventStreamService.sendRecord(LocalDateTime.now(), "User_Login_EXECUTED", "user", null);
+        this.eventStreamService.sendRecord(LocalDateTime.now(), "User_Login_EXECUTED", "user", null, "BASIC");
 
         return this.userRepository.findByEmail(loginDTO.getEmail()).orElseThrow();
     }

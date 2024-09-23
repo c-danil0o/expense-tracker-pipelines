@@ -14,6 +14,7 @@ public class UserDTO {
     private String lastName;
     private String currency;
     private UserType type;
+    private String country;
     private double funds;
     private double reservedFunds;
     private String password;

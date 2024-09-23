@@ -27,6 +27,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserType type;
     private String currency;
+    private String country;
     private double funds;
     private double reservedFunds;
     private String password;

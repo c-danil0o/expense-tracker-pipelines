@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS batch_runs;
+
 CREATE TABLE batch_runs (
     ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -7,4 +9,4 @@ CREATE TABLE batch_runs (
 );
 
 INSERT INTO batch_runs(timestamp, last_user, last_transaction, last_transaction_group)
-VALUES(CURRENT_TIMESTAMP, 1,1,1);
+VALUES(CURRENT_TIMESTAMP, 0,0,0);

@@ -6,6 +6,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +30,9 @@ public class User implements UserDetails {
     private UserType type;
     private String currency;
     private String country;
+    private Gender gender;
+    private LocalDate birthDate;
+    private LocalDateTime registeredAt;
     private double funds;
     private double reservedFunds;
     private String password;

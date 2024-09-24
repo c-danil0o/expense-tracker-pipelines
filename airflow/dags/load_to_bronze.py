@@ -43,15 +43,15 @@ def load_data_into_bronze():
     def transfer_user_to_bronze(row):
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
         connection = mysql_hook.get_conn()
-        params = (row[0], row[1], row[2], row[3], str(datetime.now()), str(datetime.now()), "Male")
-        mysql_hook.run("""INSERT INTO batch_user_data(email, country, currency, type, birthdate, registered_at, gender) VALUES(%s, %s, %s,%s, %s,%s, %s);""", parameters=params)
+        params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7])
+        mysql_hook.run("""INSERT INTO batch_user_data(email, country, currency, type, user_id, gender, registered_at, birth_date) VALUES(%s, %s, %s,%s, %s,%s, %s, %s);""", parameters=params)
 
 
     def transfer_transaction_to_bronze(row):
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
         connection = mysql_hook.get_conn()
-        params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7])
-        mysql_hook.run("""INSERT INTO batch_transaction_data(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount) VALUES(%s, %s, %s,%s, %s,%s, %s, %s);""", parameters=params)
+        params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
+        mysql_hook.run("""INSERT INTO batch_transaction_data(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id) VALUES(%s, %s, %s,%s, %s,%s, %s, %s);""", parameters=params)
 
     def transfer_group_to_bronze(row):
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
@@ -80,7 +80,7 @@ def load_data_into_bronze():
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker")
         connection = mysql_hook.get_conn()
         cursor = connection.cursor()
-        cursor.execute(f"SELECT email, country, currency, type, user_id FROM user WHERE user.user_id > {last_user};")
+        cursor.execute(f"SELECT email, country, currency, type, user_id, gender, registered_at, birth_date FROM user WHERE user.user_id > {last_user};")
         result = cursor.fetchall()
         last_id = -1
         for row in result:

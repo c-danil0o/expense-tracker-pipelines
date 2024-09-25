@@ -2,7 +2,6 @@
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 from datetime import datetime
-from airflow.operators.python import PythonOperator
 import requests, json
 from airflow.models.taskinstance import TaskInstance
 

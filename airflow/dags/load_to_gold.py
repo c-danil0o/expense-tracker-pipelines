@@ -1,9 +1,7 @@
 from airflow.utils.dates import days_ago
 from datetime import timedelta
-from datetime import datetime
-import requests, json
 from airflow.providers.mysql.hooks.mysql import MySqlHook
-import decimal
+import datetime
 
 from airflow.decorators import dag, task
 
@@ -18,10 +16,9 @@ default_args = {
     'load_to_gold',
     default_args=default_args,
     description='Dump data to star schema gold layer',
-    start_date=days_ago(0),
+    start_date=datetime.datetime.now(),
     tags=['v1'],
-
-    schedule_interval=timedelta(days=1),
+    schedule_interval=None
 )
 def load_data_into_gold():
 

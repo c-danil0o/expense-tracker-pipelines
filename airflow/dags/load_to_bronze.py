@@ -1,6 +1,8 @@
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 from airflow.providers.mysql.hooks.mysql import MySqlHook
+import datetime
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 from airflow.decorators import dag, task
 
@@ -16,8 +18,8 @@ default_args = {
     'load_to_bronze',
     default_args=default_args,
     description='Test mysql connection',
-    schedule_interval=timedelta(days=1),
-    start_date=days_ago(0),
+    schedule_interval=timedelta(minutes=20),
+    start_date=datetime.datetime.now(),
     tags=['v1'],
 )
 def load_data_into_bronze():
@@ -92,19 +94,18 @@ def load_data_into_bronze():
         return last_id
 
 
-    @task
-    def update_ids(group_id, user_id, transaction_id):
-        print(group_id, user_id, transaction_id)
-        mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
-        connection = mysql_hook.get_conn()
-        params = (group_id, user_id, transaction_id)
-        mysql_hook.run("""INSERT INTO batch_runs(last_transaction_group, last_user, last_transaction) VALUES(%s, %s, %s);""", parameters=params)
+    trigger_second_dag = TriggerDagRunOperator(
+            task_id='trigger_silver_dag',
+            trigger_dag_id='load_to_silver',
+            wait_for_completion=False  
+        )
+
+
 
 
     ids = get_last_ids()
-    fetch_groups(ids)
-    fetch_users(ids)
-    fetch_transactions(ids)
+    [fetch_groups(ids), fetch_users(ids), fetch_transactions(ids)] >> trigger_second_dag
+
 
 
 load_data_into_bronze()

@@ -5,6 +5,7 @@ from datetime import datetime
 import requests, json
 from airflow.providers.mysql.hooks.mysql import MySqlHook
 import decimal
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 from airflow.decorators import dag, task
 
@@ -36,10 +37,9 @@ def convert_to_usd(base_currency, date:datetime, amount):
     'load_to_silver',
     default_args=default_args,
     description='Copy data and transform',
-    start_date=days_ago(0),
+    start_date=datetime.now(),
     tags=['v1'],
-
-    schedule_interval=timedelta(days=1),
+    schedule_interval=None
 )
 def load_data_into_silver():
 
@@ -119,10 +119,14 @@ def load_data_into_silver():
         params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], amount_usd)
         mysql_hook.run("""INSERT INTO transaction_data_silver(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id, amount_usd) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s, %s);""", parameters=params)
 
-    ids = get_last_ids()
-    fetch_users(ids)
-    fetch_groups(ids)
-    fetch_transactions(ids)
 
+    trigger_second_dag = TriggerDagRunOperator(
+            task_id='trigger_gold_dag',
+            trigger_dag_id='load_to_gold',
+            wait_for_completion=False  
+        )
+
+    ids = get_last_ids()
+    [fetch_groups(ids), fetch_users(ids), fetch_transactions(ids)] >> trigger_second_dag
 
 load_data_into_silver()

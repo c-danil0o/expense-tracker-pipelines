@@ -36,7 +36,7 @@ def convert_to_usd(base_currency, date:datetime, amount):
     'load_to_silver',
     default_args=default_args,
     description='Copy data and transform',
-    start_date=None,
+    start_date=days_ago(0),
     tags=['v1'],
 
     schedule_interval=timedelta(days=1),

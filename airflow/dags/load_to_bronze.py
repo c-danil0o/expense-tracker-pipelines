@@ -17,7 +17,7 @@ default_args = {
     default_args=default_args,
     description='Test mysql connection',
     schedule_interval=timedelta(days=1),
-    start_date=None,
+    start_date=days_ago(0),
     tags=['v1'],
 )
 def load_data_into_bronze():

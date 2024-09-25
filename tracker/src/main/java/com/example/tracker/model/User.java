@@ -30,6 +30,7 @@ public class User implements UserDetails {
     private UserType type;
     private String currency;
     private String country;
+    @Enumerated(EnumType.STRING)
     private Gender gender;
     private LocalDate birthDate;
     private LocalDateTime registeredAt;

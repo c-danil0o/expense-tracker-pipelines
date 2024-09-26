@@ -44,4 +44,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
             "AND t.timestamp BETWEEN :startDate AND :endDate"
     )
     Double getTotalSpentForUserInTimePeriodForTransactionGroup(Long userId, LocalDateTime startDate, LocalDateTime endDate, Long transactionGroupId);
+
+    @Query("SELECT t FROM Transaction t WHERE (t.status = 'Scheduled' OR t.status = 'InProgress') AND t.timestamp < CURRENT_TIMESTAMP")
+    List<Transaction> findPendingTransactions();
 }

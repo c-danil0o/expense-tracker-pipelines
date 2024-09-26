@@ -1,5 +1,3 @@
-
-
 INSERT INTO dim_country (name, code) VALUES
 ('Afghanistan', 'AF'),
 ('Albania', 'AL'),

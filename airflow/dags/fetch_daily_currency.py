@@ -32,10 +32,10 @@ def get_currency_value(date:datetime):
 
 
 @dag(
-    'fetch_currency_catch_up_v2',
+    'fetch_currency_catch_up_v3',
     default_args=default_args,
     description='Get currencies',
-    start_date=datetime(2024, 9, 2),
+    start_date=datetime(2024, 4, 1),
     tags=['v1'],
     schedule_interval=timedelta(days=1),
     catchup=True,

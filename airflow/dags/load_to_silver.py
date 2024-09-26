@@ -127,6 +127,6 @@ def load_data_into_silver():
         )
 
     ids = get_last_ids()
-    [fetch_groups(ids), fetch_users(ids), fetch_transactions(ids)] >> trigger_second_dag
+    fetch_users(ids) >>  fetch_groups(ids) >>  fetch_transactions(ids) >> trigger_second_dag
 
 load_data_into_silver()

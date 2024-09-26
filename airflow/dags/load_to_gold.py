@@ -56,9 +56,11 @@ def load_data_into_gold():
         connection = mysql_hook.get_conn()
         cursor = connection.cursor()
         cursor.execute(f"SELECT ID FROM dim_country WHERE dim_country.code='{row[1]}';")
-        result = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        if result is None:
+            raise ValueError("Country not found!")
         
-        params = (row[0], result, row[2], row[3], row[4], row[5], row[6], row[7])
+        params = (row[0], result[0], row[2], row[3], row[4], row[5], row[6], row[7])
         mysql_hook.run("""INSERT INTO dim_user_data(email, country_id, currency, type, user_id, gender, registered_at, birthdate) VALUES(%s, %s, %s,%s, %s,%s, %s, %s);""", parameters=params)
   
     @task

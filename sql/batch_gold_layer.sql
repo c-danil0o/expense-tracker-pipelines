@@ -1,7 +1,6 @@
 
 DROP TABLE IF EXISTS fact_transaction_data;
 DROP TABLE IF EXISTS dim_transaction_group_data;
-DROP TABLE IF EXISTS dim_currency_data;
 DROP TABLE IF EXISTS dim_user_data;
 
 
@@ -12,12 +11,6 @@ CREATE TABLE dim_transaction_group_data (
     user_id BIGINT,
     group_id BIGINT,
     budget_cap DECIMAL(15,3)
-);
-
-CREATE TABLE dim_currency_data (
-    ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
-	name VARCHAR(255) NOT NULL,
-	code VARCHAR(255) NOT NULL
 );
 
 

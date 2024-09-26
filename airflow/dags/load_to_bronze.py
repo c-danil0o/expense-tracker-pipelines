@@ -54,7 +54,7 @@ def load_data_into_bronze():
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker")
         connection = mysql_hook.get_conn()
         cursor = connection.cursor()
-        cursor.execute(f"SELECT timestamp, transaction_group, user_user_id, currency, repeat_type, status, type, amount, id FROM transaction WHERE transaction.id > {last_transaction};")
+        cursor.execute(f"SELECT timestamp, transaction_group, user_user_id, currency, repeat_type, status, type, amount, id FROM transaction WHERE transaction.id > {last_transaction} AND status = 'Done';")
         result = cursor.fetchall()
         last_id = -1
         for row in result:

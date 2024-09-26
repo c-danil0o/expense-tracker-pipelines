@@ -159,6 +159,15 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+  grafana:
+    image: grafana/grafana-enterprise
+    restart: unless-stopped
+    networks:
+      - springapimysql-net
+    ports:
+     - '3000:3000'
+    volumes:
+     - 'grafana_storage:/var/lib/grafana'
 
 networks:
   springapimysql-net:
@@ -166,3 +175,4 @@ networks:
 volumes:
   my-db:
   postgres-db-volume:
+  grafana_storage: {} 

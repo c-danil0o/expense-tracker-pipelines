@@ -47,6 +47,8 @@ CREATE TABLE request_event (
     device_family VARCHAR(255),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     feature_type VARCHAR(255),
+    payload TEXT,
+    user_email VARCHAR(255),
     event_id BIGINT,
     CONSTRAINT FK_RequestEvent_EventId FOREIGN KEY (event_id)
         REFERENCES raw_event_bronze(event_id)

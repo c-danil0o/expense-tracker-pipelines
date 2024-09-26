@@ -18,17 +18,21 @@ BEGIN
 		SELECT SUBSTRING_INDEX(NEW.event_type, '_', 1), NEW.event_type, NEW.feature_type
 		WHERE NOT EXISTS(SELECT 1 FROM dim_feature WHERE dim_feature.code = NEW.event_type);
         
-		INSERT INTO fact_feature_map(feature_id, month, day, hour, timestamp)
-        VALUES((SELECT ID FROM dim_feature WHERE dim_feature.code = NEW.event_type) , EXTRACT(MONTH FROM NEW.timestamp), EXTRACT(DAY FROM NEW.timestamp), EXTRACT(HOUR FROM NEW.timestamp), NEW.timestamp);
+		SET @new_id = UUID_TO_BIN(UUID());
 		
-		INSERT INTO dim_request(timestamp, ip_address, user_agent, os_family, device_family)
+		INSERT INTO dim_request(ID, timestamp, ip_address, user_agent, os_family, device_family, payload, user_email)
 		VALUES(
+			@new_id,
 			NEW.timestamp,
 			NEW.ip_address,
 			NEW.user_agent,
 			NEW.os_family,
-			NEW.device_family
+			NEW.device_family,
+            NEW.payload,
+            NEW.user_email
 		);
+		INSERT INTO fact_feature_map(feature_id, month, day, hour, timestamp, request_id)
+        VALUES((SELECT ID FROM dim_feature WHERE dim_feature.code = NEW.event_type) , EXTRACT(MONTH FROM NEW.timestamp), EXTRACT(DAY FROM NEW.timestamp), EXTRACT(HOUR FROM NEW.timestamp), NEW.timestamp, @new_id);
 
 END$$
 DELIMITER ;

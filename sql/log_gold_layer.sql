@@ -35,7 +35,9 @@ CREATE TABLE dim_request (
     ip_address VARCHAR(255),
     user_agent VARCHAR(255),
     os_family VARCHAR(255),
-    device_family VARCHAR(255)
+    user_email VARCHAR(255),
+    device_family VARCHAR(255),
+    payload TEXT
 );
 
 CREATE TABLE fact_transaction (
@@ -50,17 +52,6 @@ CREATE TABLE fact_transaction (
         REFERENCES dim_currency(ID)
 );
 
-CREATE TABLE fact_request (
-    ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    request_id BINARY(16) NOT NULL,
-    country_id BINARY(16),
-    user_agent VARCHAR(255),
-	CONSTRAINT FK_fact_request_request_id FOREIGN KEY (request_id)
-        REFERENCES dim_request(ID),
-	CONSTRAINT FK_fact_request_country_id FOREIGN KEY (country_id)
-        REFERENCES dim_country(ID)
-);
 
 CREATE TABLE fact_reminder (
     ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
@@ -74,6 +65,7 @@ CREATE TABLE fact_reminder (
 CREATE TABLE fact_feature_map (
     ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
     feature_id BINARY(16) NOT NULL,
+    request_id BINARY(16) NOT NULL,
     country_id BINARY(16),
     month INT NOT NULL,
     day INT NOT NULL,
@@ -81,6 +73,8 @@ CREATE TABLE fact_feature_map (
     timestamp TIMESTAMP NOT NULL,
 	CONSTRAINT FK_fact_feature_map_feature_id FOREIGN KEY (feature_id)
         REFERENCES dim_feature(ID),
+	CONSTRAINT FK_fact_feature_map_request_id FOREIGN KEY (request_id)
+        REFERENCES dim_request(ID),
 	CONSTRAINT FK_fact_feature_map_country_id FOREIGN KEY (country_id)
         REFERENCES dim_country(ID)
 );

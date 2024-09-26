@@ -14,12 +14,12 @@ CREATE TRIGGER after_request_event_insert
 AFTER INSERT ON request_event
 FOR EACH ROW
 BEGIN
-		INSERT INTO dim_event_type(name, code)
-		SELECT SUBSTRING_INDEX(NEW.event_type, '_', 1), NEW.event_type
-		WHERE NOT EXISTS(SELECT 1 FROM dim_event_type WHERE dim_event_type.code = NEW.event_type);
-		
-		INSERT INTO dim_feature(name, event_type_id, feature_type)
-		SELECT SUBSTRING_INDEX(NEW.event_type, '_', -1), (SELECT ID from dim_event_type WHERE dim_event_type.code = NEW.event_type), NEW.feature_type;
+		INSERT INTO dim_feature(name, code, feature_type)
+		SELECT SUBSTRING_INDEX(NEW.event_type, '_', 1), NEW.event_type, NEW.feature_type
+		WHERE NOT EXISTS(SELECT 1 FROM dim_feature WHERE dim_feature.code = NEW.event_type);
+        
+		INSERT INTO fact_feature_map(feature_id, month, day, hour, timestamp)
+        VALUES((SELECT ID FROM dim_feature WHERE dim_feature.code = NEW.event_type) , EXTRACT(MONTH FROM NEW.timestamp), EXTRACT(DAY FROM NEW.timestamp), EXTRACT(HOUR FROM NEW.timestamp), NEW.timestamp);
 		
 		INSERT INTO dim_request(timestamp, ip_address, user_agent, os_family, device_family)
 		VALUES(
@@ -29,6 +29,7 @@ BEGIN
 			NEW.os_family,
 			NEW.device_family
 		);
+
 END$$
 DELIMITER ;
 

@@ -1,3 +1,12 @@
+DROP TABLE IF EXISTS dim_country;
+
+CREATE TABLE dim_country (
+    ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(255) UNIQUE NOT NULL
+);
+
+
 INSERT INTO dim_country (name, code) VALUES
 ('Afghanistan', 'AF'),
 ('Albania', 'AL'),
@@ -182,7 +191,7 @@ INSERT INTO dim_country (name, code) VALUES
 ('Uganda', 'UG'),
 ('Ukraine', 'UA'),
 ('United Arab Emirates', 'AE'),
-('United Kingdom', 'GB'),
+('United Kingdom', 'UK'),
 ('United States of America', 'US'),
 ('Uruguay', 'UY'),
 ('Uzbekistan', 'UZ'),

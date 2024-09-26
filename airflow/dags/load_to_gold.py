@@ -1,9 +1,13 @@
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 from airflow.providers.mysql.hooks.mysql import MySqlHook
-import datetime
+from datetime import date, datetime
 
 from airflow.decorators import dag, task
+
+def calculate_age(born):
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 default_args = {
     'owner': 'airflow',
@@ -16,7 +20,7 @@ default_args = {
     'load_to_gold',
     default_args=default_args,
     description='Dump data to star schema gold layer',
-    start_date=datetime.datetime.now(),
+    start_date=datetime.now(),
     tags=['v1'],
     schedule_interval=None
 )
@@ -60,8 +64,9 @@ def load_data_into_gold():
         if result is None:
             raise ValueError("Country not found!")
         
-        params = (row[0], result[0], row[2], row[3], row[4], row[5], row[6], row[7])
-        mysql_hook.run("""INSERT INTO dim_user_data(email, country_id, currency, type, user_id, gender, registered_at, birthdate) VALUES(%s, %s, %s,%s, %s,%s, %s, %s);""", parameters=params)
+        age = calculate_age(row[7])
+        params = (row[0], result[0], row[2], row[3], row[4], row[5], row[6], row[7], age)
+        mysql_hook.run("""INSERT INTO dim_user_data(email, country_id, currency, type, user_id, gender, registered_at, birthdate, age) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s);""", parameters=params)
   
     @task
     def fetch_groups(last_ids, user_id):

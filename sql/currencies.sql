@@ -1,3 +1,11 @@
+DROP TABLE IF EXISTS dim_currency;
+
+CREATE TABLE dim_currency (
+    ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(255) UNIQUE NOT NULL
+);
+
 INSERT INTO dim_currency (name, code) VALUES
 ('Afghan Afghani', 'AFN'),
 ('Albanian Lek', 'ALL'),
@@ -144,6 +152,7 @@ INSERT INTO dim_currency (name, code) VALUES
 ('Ukrainian Hryvnia', 'UAH'),
 ('United Arab Emirates Dirham', 'AED'),
 ('United States Dollar', 'USD'),
+('United Kingdom', 'GBP'),
 ('Uruguayan Peso', 'UYU'),
 ('Uzbekistani Som', 'UZS'),
 ('Vanuatu Vatu', 'VUV'),

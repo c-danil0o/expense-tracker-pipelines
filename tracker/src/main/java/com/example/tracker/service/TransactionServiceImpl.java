@@ -93,6 +93,7 @@ public class TransactionServiceImpl implements TransactionService {
     private String getTransactionMetadata(Transaction transaction){
         JsonObject json = new JsonObject();
         json.add("type", transaction.getType().toString());
+        json.add("name", transaction.getName());
         json.add("currency", transaction.getCurrency());
         json.add("amount", transaction.getAmount());
         json.add("status", transaction.getStatus().toString());

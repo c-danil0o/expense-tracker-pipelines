@@ -26,6 +26,7 @@ CREATE TABLE transaction_group_data (
 CREATE TABLE transaction_data (
     ID BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
     transaction_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
     transaction_group BIGINT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     currency VARCHAR(255) NOT NULL,

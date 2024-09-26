@@ -39,8 +39,8 @@ def load_data_into_bronze():
     def transfer_transaction_to_bronze(row):
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
         connection = mysql_hook.get_conn()
-        params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
-        mysql_hook.run("""INSERT INTO transaction_data(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s);""", parameters=params)
+        params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9])
+        mysql_hook.run("""INSERT INTO transaction_data(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id, name) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s, %s);""", parameters=params)
 
     def transfer_group_to_bronze(row):
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
@@ -54,7 +54,7 @@ def load_data_into_bronze():
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker")
         connection = mysql_hook.get_conn()
         cursor = connection.cursor()
-        cursor.execute(f"SELECT timestamp, transaction_group, user_user_id, currency, repeat_type, status, type, amount, id FROM transaction WHERE transaction.id > {last_transaction} AND status = 'Done';")
+        cursor.execute(f"SELECT timestamp, transaction_group, user_user_id, currency, repeat_type, status, type, amount, id, name FROM transaction WHERE transaction.id > {last_transaction} AND status = 'Done';")
         result = cursor.fetchall()
         last_id = -1
         for row in result:

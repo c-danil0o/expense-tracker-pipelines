@@ -100,7 +100,7 @@ def load_data_into_gold():
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
         connection = mysql_hook.get_conn()
         cursor = connection.cursor()
-        cursor.execute(f"SELECT timestamp, transaction_group, user_id, currency, repeat_type, status, type, amount, transaction_id, amount_usd FROM transaction_data_silver WHERE transaction_data_silver.transaction_id > {last_transaction};")
+        cursor.execute(f"SELECT timestamp, transaction_group, user_id, currency, repeat_type, status, type, amount, transaction_id, amount_usd, name FROM transaction_data_silver WHERE transaction_data_silver.transaction_id > {last_transaction};")
         result = cursor.fetchall()
         last_id = -1
         for row in result:
@@ -127,8 +127,8 @@ def load_data_into_gold():
             user_id = result2[0]
             currency_id = result3[0]
 
-            params = (row[0], group_id, user_id, currency_id, row[4], row[5], row[6], row[7], row[9])
-            mysql_hook.run("""INSERT INTO fact_transaction_data(timestamp,transaction_group, user_id,currency_id, repeat_type, status ,type, amount,  amount_usd) VALUES(%s, %s, %s, %s,%s, %s, %s, %s, %s);""", parameters=params)
+            params = (row[0], group_id, user_id, currency_id, row[4], row[5], row[6], row[7], row[9], row[10])
+            mysql_hook.run("""INSERT INTO fact_transaction_data(timestamp,transaction_group, user_id,currency_id, repeat_type, status ,type, amount,  amount_usd, name) VALUES(%s, %s, %s, %s,%s, %s, %s, %s, %s);""", parameters=params)
         else:
             print(result, result2, result3)
             raise ValueError("Invalid warehouse constraint state!")

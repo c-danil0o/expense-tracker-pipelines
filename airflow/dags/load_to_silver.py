@@ -97,7 +97,7 @@ def load_data_into_silver():
         mysql_hook = MySqlHook(mysql_conn_id="mysql-server", schema="expense-tracker-warehouse")
         connection = mysql_hook.get_conn()
         cursor = connection.cursor()
-        cursor.execute(f"SELECT timestamp, transaction_group, user_id, currency, repeat_type, status, type, amount, transaction_id FROM transaction_data WHERE transaction_data.transaction_id > {last_transaction};")
+        cursor.execute(f"SELECT timestamp, transaction_group, user_id, currency, repeat_type, status, type, amount, transaction_id, name FROM transaction_data WHERE transaction_data.transaction_id > {last_transaction};")
         result = cursor.fetchall()
         last_id = -1
         for row in result:
@@ -116,8 +116,8 @@ def load_data_into_silver():
             amount_usd = row[7]
         else:
             amount_usd = convert_to_usd(row[3], row[0], row[7])
-        params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], amount_usd)
-        mysql_hook.run("""INSERT INTO transaction_data_silver(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id, amount_usd) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s, %s);""", parameters=params)
+        params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], amount_usd, row[9])
+        mysql_hook.run("""INSERT INTO transaction_data_silver(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id, amount_usd, name) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s, %s);""", parameters=params)
 
 
     trigger_second_dag = TriggerDagRunOperator(

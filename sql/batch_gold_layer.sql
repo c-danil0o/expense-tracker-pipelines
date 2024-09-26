@@ -39,6 +39,7 @@ CREATE TABLE fact_transaction_data (
     user_id BINARY(16) NOT NULL,
 	type VARCHAR(255) NOT NULL,
 	status VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
 	repeat_type VARCHAR(255) NOT NULL,
     amount DECIMAL(15,3) NOT NULL,
     amount_usd DECIMAL(15,3) NOT NULL,

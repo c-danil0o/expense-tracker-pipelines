@@ -31,6 +31,7 @@ CREATE TABLE transaction_data_silver (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     currency VARCHAR(255) NOT NULL,
     user_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
 	type VARCHAR(255) NOT NULL,
 	status VARCHAR(255) NOT NULL,
 	repeat_type VARCHAR(255) NOT NULL,

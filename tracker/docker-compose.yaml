@@ -42,8 +42,6 @@ services:
 
   x-spark-common: &spark-common
     image: bitnami/spark:latest
-    environment:
-      SPARK_HOME: ./
     volumes:
       - ./jobs:/opt/bitnami/spark/jobs
     networks:

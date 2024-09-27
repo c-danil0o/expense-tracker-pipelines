@@ -31,7 +31,13 @@ def test_spark_worker():
     python_job = SparkSubmitOperator(
         task_id="python_job",
         conn_id="spark-conn",
-        application="jobs/python/spark-test.py",
+        jars="bitnami/spark/jars/mysql-connector-j-9.0.0.jar",
+        application="jobs/python/load_to_batch_processing_pipeline.py",
+        conf={
+            'spark.master': 'spark://spark-master:7077',
+            'spark.driver.extraClassPath': '/opt/bitnami/spark/jars/mysql-connector-j-9.0.0.jar',
+            'spark.executor.extraClassPath': '/opt/bitnami/spark/jars/mysql-connector-j-9.0.0.jar'
+    },
     )
 
 

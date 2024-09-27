@@ -13,7 +13,7 @@ public class TransactionGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private double budgetCap;
+    private Double budgetCap;
     @Column(nullable = false)
     private String name;
     // Optional field for user created transaction groups

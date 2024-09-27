@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 public class TransactionDTO {
     private Long id;
     private Long userId;
+    private String name;
     @DateTimeFormat()
     @JsonFormat(pattern = "YYYY-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;

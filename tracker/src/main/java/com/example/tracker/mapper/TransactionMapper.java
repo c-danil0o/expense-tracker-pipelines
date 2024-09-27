@@ -26,13 +26,13 @@ public class TransactionMapper {
         return TransactionDTO.builder().id(transaction.getId()).userId(transaction.getUser().getUserId()).
                 timestamp(transaction.getTimestamp()).type(transaction.getType()).currency(transaction.getCurrency())
                 .amount(transaction.getAmount()).status(transaction.getStatus()).repeatType(transaction.getRepeatType())
-                .transactionGroupId(transaction.getTransactionGroup().getId()).build();
+                .transactionGroupId(transaction.getTransactionGroup().getId()).name(transaction.getName()).build();
     }
 
     public Transaction fromTransactionDTO(TransactionDTO transactionDTO, User user, TransactionGroup transactionGroup) {
         return Transaction.builder().id(transactionDTO.getId()).user(user).timestamp(transactionDTO.getTimestamp()).
                 type(transactionDTO.getType()).currency(transactionDTO.getCurrency()).amount(transactionDTO.getAmount())
-                .repeatType(transactionDTO.getRepeatType()).transactionGroup(transactionGroup).
+                .repeatType(transactionDTO.getRepeatType()).transactionGroup(transactionGroup).name(transactionDTO.getName()).
                 status(transactionDTO.getStatus()).build();
     }
 

@@ -11,4 +11,10 @@ public class TransactionGroupDTO {
     private String name;
     private Long userId;
 
+    public String getBudgetCapSafe(){
+        if (budgetCap != null)
+            return budgetCap.toString();
+        return "";
+    }
+
 }

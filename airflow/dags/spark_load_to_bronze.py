@@ -2,6 +2,7 @@ from datetime import timedelta
 import datetime
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 from airflow.decorators import dag, task
 
@@ -14,14 +15,14 @@ default_args = {
 
 
 @dag(
-    'spark-test',
+    'spark_load_to_bronze',
     default_args=default_args,
     description='Test spark',
     schedule_interval=timedelta(minutes=20),
     start_date=datetime.datetime.now(),
     tags=['v1'],
 )
-def test_spark_worker():
+def load_to_bronze():
 
     start = PythonOperator(
         task_id = "start",
@@ -35,5 +36,11 @@ def test_spark_worker():
         application="jobs/python/load_to_batch_processing_pipeline.py",
     )
 
+    trigger_second_dag = TriggerDagRunOperator(
+            task_id='trigger_spark_silver_dag',
+            trigger_dag_id='spark_load_to_silver',
+            wait_for_completion=False  
+        )
+    start >> python_job >> trigger_second_dag
 
-test_spark_worker()
+load_to_bronze()

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import hashlib
 
 NUM_USERS = 20
-NUM_TRANSACTIONS = 500
+NUM_TRANSACTIONS = 1500
 NUM_REMINDERS = 100
 NUM_GROUPS = 6
 USER_TYPES = ['Basic', 'Premium']
@@ -101,8 +101,6 @@ for key in TRANSACTION_GROUPS.keys():
 
     sql_script.append(f"""
     INSERT INTO transaction_group (budget_cap, name, user_id) 
-    VALUES ({budget_cap}, '{key}', {user_id});
-    INSERT INTO dim_transaction_group(budget_cap, name, user_id)
     VALUES ({budget_cap}, '{key}', {user_id});
     """)
 

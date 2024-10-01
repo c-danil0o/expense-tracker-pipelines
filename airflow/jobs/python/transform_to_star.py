@@ -5,6 +5,7 @@ from datetime import date, datetime
 from pyspark.sql.functions import udf
 from pyspark.sql.types import BinaryType
 from pyspark.sql.types import IntegerType
+from pyspark.sql import Row
 
 spark = SparkSession.builder.appName("Bronze_layer_loader").getOrCreate()
 
@@ -135,6 +136,7 @@ if __name__ == "__main__":
     user_df = user_df.withColumn("country_id", country_id_udf(user_df.country))
     user_df = user_df.drop("country")
     user_df = user_df.withColumn("age", age_udf(to_date(user_df.birthdate, "yyyy-MM-dd")))
+    user_id = user_df.count()
 
     transfer_data(user_df,warehouse_url, "dim_user_data")
 
@@ -145,6 +147,7 @@ if __name__ == "__main__":
     last_group = last_ids[2]
     group_query = f"SELECT group_id, name, user_id, budget_cap FROM transaction_group_data_silver WHERE transaction_group_data_silver.group_id > {last_group}"
     group_df = fetch_data(group_query, warehouse_url)
+    transaction_group_id = group_df.count()
     group_df = group_df.filter(~group_df["group_id"].isin(list(group_dict.value.keys())))
 
     transfer_data(group_df, warehouse_url, "dim_transaction_group_data")
@@ -165,13 +168,13 @@ if __name__ == "__main__":
     transaction_df = transaction_df.withColumn("user_id",user_udf(transaction_df.user_id))
     transaction_df = transaction_df.withColumn("currency_id", currency_udf(transaction_df.currency))
     transaction_df = transaction_df.drop("currency")
-
-    transaction_df.show()
-
-
+    transaction_id = transaction_df.count()
 
     transfer_data(transaction_df, warehouse_url, "fact_transaction_data")
 
+    new_ids = spark.createDataFrame([Row(last_transaction_group=transaction_group_id, last_user=user_id, last_transaction=transaction_id)])
+
+    transfer_data(new_ids, warehouse_url, "batch_runs")
 
     spark.stop()
     

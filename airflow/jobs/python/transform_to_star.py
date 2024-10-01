@@ -136,18 +136,19 @@ if __name__ == "__main__":
     user_df = user_df.withColumn("country_id", country_id_udf(user_df.country))
     user_df = user_df.drop("country")
     user_df = user_df.withColumn("age", age_udf(to_date(user_df.birthdate, "yyyy-MM-dd")))
-    user_id = user_df.count()
+    user_id = user_df.agg({"user_id":"max"}).collect()[0][0]
 
     transfer_data(user_df,warehouse_url, "dim_user_data")
 
 
     group_dict = fetch_groups()
-    print(group_dict.value)
 
     last_group = last_ids[2]
     group_query = f"SELECT group_id, name, user_id, budget_cap FROM transaction_group_data_silver WHERE transaction_group_data_silver.group_id > {last_group}"
     group_df = fetch_data(group_query, warehouse_url)
-    transaction_group_id = group_df.count()
+
+    transaction_group_id =group_df.agg({"group_id":"max"}).collect()[0][0]
+
     group_df = group_df.filter(~group_df["group_id"].isin(list(group_dict.value.keys())))
 
     transfer_data(group_df, warehouse_url, "dim_transaction_group_data")
@@ -161,14 +162,16 @@ if __name__ == "__main__":
     currency_udf = udf(lambda curr_id: currency_dict.value.get(curr_id, None), BinaryType())
 
     last_transaction = last_ids[1]
-    transaction_query = f"SELECT timestamp, transaction_group, user_id, currency, repeat_type, status, type, amount, amount_usd, name FROM transaction_data_silver WHERE transaction_data_silver.transaction_id > {last_transaction}"
+    transaction_query = f"SELECT timestamp, transaction_group, user_id, currency, repeat_type, status, type, amount, amount_usd, name, transaction_id FROM transaction_data_silver WHERE transaction_data_silver.transaction_id > {last_transaction}"
     transaction_df = fetch_data(transaction_query, warehouse_url)
     transaction_df = transaction_df.withColumn("transaction_group", group_udf(transaction_df.transaction_group))
 
     transaction_df = transaction_df.withColumn("user_id",user_udf(transaction_df.user_id))
     transaction_df = transaction_df.withColumn("currency_id", currency_udf(transaction_df.currency))
     transaction_df = transaction_df.drop("currency")
-    transaction_id = transaction_df.count()
+
+    transaction_id = transaction_df.agg({"transaction_id":"max"}).collect()[0][0]
+    transaction_df = transaction_df.drop("transaction_id")
 
     transfer_data(transaction_df, warehouse_url, "fact_transaction_data")
 

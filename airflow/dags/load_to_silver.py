@@ -117,7 +117,7 @@ def load_data_into_silver():
         else:
             amount_usd = convert_to_usd(row[3], row[0], row[7])
         params = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], amount_usd, row[9])
-        mysql_hook.run("""INSERT INTO transaction_data_silver(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id, amount_usd, name) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s, %s);""", parameters=params)
+        mysql_hook.run("""INSERT INTO transaction_data_silver(timestamp,transaction_group, user_id,currency, repeat_type, status ,type, amount, transaction_id, amount_usd, name) VALUES(%s, %s, %s,%s, %s,%s, %s, %s, %s, %s, %s);""", parameters=params)
 
 
     trigger_second_dag = TriggerDagRunOperator(

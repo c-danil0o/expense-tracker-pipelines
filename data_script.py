@@ -5,7 +5,7 @@ import hashlib
 NUM_USERS = 20
 NUM_TRANSACTIONS = 500
 NUM_REMINDERS = 100
-NUM_GROUPS = 50
+NUM_GROUPS = 6
 USER_TYPES = ['Basic', 'Premium']
 GENDERS = ['Male', 'Female', 'Other', 'Male','Male','Female','Female']
 NAMES = ['Oliver', 'Emma', 'James', 'Sophia', 'Liam', 'Isabella', 'Noah', 'Mia', 'Elijah', 'Amelia', 
@@ -24,6 +24,49 @@ REMINDER_TYPES = ['Total', 'BudgetCap']
 REPEAT_TYPES = ['None', 'Weekly', 'Monthly', 'Yearly']
 COUNTRIES = ['US', 'UK', 'DE', 'FR', 'AU']
 CURRENCIES = ['USD', 'EUR', 'GBP', 'AUD']
+TRANSACTION_GROUPS = {
+    'Groceries': [
+        'Grocery Store', 
+        'Supermarket', 
+        'Online Groceries'
+    ],
+    'Utilities': [
+        'Electricity Bill', 
+        'Water Bill', 
+        'Internet Bill', 
+        'Gas Bill'
+    ],
+    'Entertainment': [
+        'Movie Tickets', 
+        'Concert Tickets', 
+        'Streaming Subscription', 
+        'Music Subscription'
+    ],
+    'Shopping': [
+        'Clothing Store', 
+        'Electronics Store', 
+        'Furniture Store'
+    ],
+    'Transportation': [
+        'Taxi Ride', 
+        'Gas Station', 
+        'Bus Ticket', 
+        'Car Rental'
+    ],
+    'Healthcare': [
+        'Pharmacy', 
+        'Doctor Appointment', 
+        'Health Insurance', 
+        'Medical Supplies'
+    ],
+    'Dining': [
+        'Restaurant', 
+        'Fast Food', 
+        'Coffee Shop', 
+        'Pizza Delivery'
+    ]
+}
+GROUP_IDS = list(TRANSACTION_GROUPS.keys())
 
 def random_date(start, end) -> datetime:
     return start + timedelta(days=random.randint(0, (end - start).days))
@@ -52,14 +95,15 @@ for i in range(1, NUM_USERS + 1):
     """)
 
 sql_script.append("\n-- Populating Transaction Groups Table")
-for i in range(1, NUM_GROUPS + 1):
-    name = f'Group{i}'
+for key in TRANSACTION_GROUPS.keys():
     budget_cap = round(random.uniform(500, 5000), 2) if random.choice([True, False]) else 'NULL'
     user_id = random.randint(1, NUM_USERS)
 
     sql_script.append(f"""
     INSERT INTO transaction_group (budget_cap, name, user_id) 
-    VALUES ({budget_cap}, '{name}', {user_id});
+    VALUES ({budget_cap}, '{key}', {user_id});
+    INSERT INTO dim_transaction_group(budget_cap, name, user_id)
+    VALUES ({budget_cap}, '{key}', {user_id});
     """)
 
 sql_script.append("\n-- Populating Transactions Table")
@@ -78,10 +122,10 @@ for i in range(1, NUM_TRANSACTIONS + 1):
         status = "Done"
     repeat_type = random.choice(REPEAT_TYPES)
     group_id = random.randint(1, NUM_GROUPS)
-
+    name = random.choice(TRANSACTION_GROUPS[GROUP_IDS[group_id]])
     sql_script.append(f"""
-    INSERT INTO transaction (user_user_id, timestamp, type, currency, amount, status, repeat_type, transaction_group) 
-    VALUES ({user_id}, '{timestamp}', '{transaction_type}', '{currency}', {amount}, '{status}', '{repeat_type}', {group_id});
+    INSERT INTO transaction (user_user_id, timestamp, type, currency, amount, status, repeat_type, transaction_group, name) 
+    VALUES ({user_id}, '{timestamp}', '{transaction_type}', '{currency}', {amount}, '{status}', '{repeat_type}', {group_id}, '{name}');
     """)
 
 # sql_script.append("\n-- Populating Reminders Table")

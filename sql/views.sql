@@ -45,13 +45,13 @@ GROUP BY g.name, t.timestamp;
 
 
 CREATE VIEW `Feature map per month` AS
-SELECT ffm.month,ffm.timestamp,
+SELECT ffm.month, TIMESTAMP(DATE_FORMAT(ffm.timestamp, '%Y-%m-%d %H:00:00')) as timestamp,
 COUNT(CASE WHEN df.name='User' THEN 1 END) AS User,
 COUNT(CASE WHEN df.name='Transaction' THEN 1 END) as Transaction,
 COUNT(CASE WHEN df.name='Reminder' THEN 1 END) as Reminder
 FROM fact_feature_map ffm
 JOIN dim_feature df ON ffm.feature_id = df.ID
-GROUP BY ffm.month, ffm.timestamp
+GROUP BY ffm.month, timestamp
 ORDER BY ffm.month;
 
 
@@ -144,11 +144,11 @@ ORDER BY feature_usage DESC;
 
 CREATE OR REPLACE VIEW request_activity_by_time AS
 SELECT 
-	dr.timestamp,
+	TIMESTAMP(DATE_FORMAT(dr.timestamp, '%Y-%m-%d %H:00:00')) as timestamp,
     COUNT(dr.ID) AS request_count
 FROM dim_request dr
-GROUP BY dr.timestamp
-ORDER BY dr.timestamp;
+GROUP BY timestamp
+ORDER BY timestamp;
 
 CREATE OR REPLACE VIEW top_users AS
 SELECT 
@@ -163,7 +163,7 @@ GROUP BY dr.user_email;
 CREATE OR REPLACE VIEW new_users_per_month AS
 SELECT 
     ffm.month,
-    COUNT(DISTINCT dr.user_email) AS new_user_count
+    COUNT(dr.user_email) AS new_user_count
 FROM fact_feature_map ffm
 JOIN dim_request dr ON ffm.request_id = dr.ID
 JOIN dim_feature df ON ffm.feature_id = df.ID

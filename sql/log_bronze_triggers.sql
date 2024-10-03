@@ -22,6 +22,8 @@ BEGIN
 	ELSEIF NEW.topic = 'reminder' THEN
         INSERT INTO reminder_event (event_type, timestamp, user_email, payload, event_id, transaction_group)
         VALUES (NEW.type, NEW.timestamp, NEW.user_email, NEW.payload, NEW.event_id, JSON_UNQUOTE(JSON_EXTRACT(NEW.payload, '$.category')));
+	ELSEIF NEW.topic = 'report' THEN
+		DO 0;
     ELSE
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Unknown event type in RawEvent';
     END IF;

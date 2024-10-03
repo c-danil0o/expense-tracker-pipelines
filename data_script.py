@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import hashlib
 
 NUM_USERS = 20
-NUM_TRANSACTIONS = 500
+NUM_TRANSACTIONS = 1500
 NUM_REMINDERS = 100
 NUM_GROUPS = 6
 USER_TYPES = ['Basic', 'Premium']
@@ -72,6 +72,23 @@ def random_date(start, end) -> datetime:
     return start + timedelta(days=random.randint(0, (end - start).days))
 
 
+def random_transaction_amount(group):
+    if group == 'Groceries':
+        return round(random.uniform(20, 150), 2)
+    elif group == 'Utilities':
+        return round(random.uniform(50, 300), 2)
+    elif group == 'Entertainment':
+        return round(random.uniform(10, 100), 2)
+    elif group == 'Shopping':
+        return round(random.uniform(30, 1000), 2) 
+    elif group == 'Transportation':
+        return round(random.uniform(5, 200), 2)
+    elif group == 'Healthcare':
+        return round(random.uniform(30, 500), 2)  
+    else:
+        return round(random.uniform(10, 200), 2)
+
+
 sql_script = []
 
 sql_script.append("-- Populating Users Table")
@@ -102,8 +119,6 @@ for key in TRANSACTION_GROUPS.keys():
     sql_script.append(f"""
     INSERT INTO transaction_group (budget_cap, name, user_id) 
     VALUES ({budget_cap}, '{key}', {user_id});
-    INSERT INTO dim_transaction_group(budget_cap, name, user_id)
-    VALUES ({budget_cap}, '{key}', {user_id});
     """)
 
 sql_script.append("\n-- Populating Transactions Table")
@@ -112,7 +127,6 @@ for i in range(1, NUM_TRANSACTIONS + 1):
     timestamp = random_date(datetime(2024, 4, 1, random.randrange(0, 24), random.randrange(0,60)), datetime(2025, 1, 1, random.randrange(0, 24), random.randrange(0,60)))
     transaction_type = random.choice(TRANSACTION_TYPES)
     currency = random.choice(CURRENCIES)
-    amount = round(random.uniform(10, 1000), 2)
     status = ""
     if timestamp > datetime.today():
         status = "Scheduled"
@@ -123,6 +137,7 @@ for i in range(1, NUM_TRANSACTIONS + 1):
     repeat_type = random.choice(REPEAT_TYPES)
     group_id = random.randint(1, NUM_GROUPS)
     name = random.choice(TRANSACTION_GROUPS[GROUP_IDS[group_id]])
+    amount = random_transaction_amount(GROUP_IDS[group_id])
     sql_script.append(f"""
     INSERT INTO transaction (user_user_id, timestamp, type, currency, amount, status, repeat_type, transaction_group, name) 
     VALUES ({user_id}, '{timestamp}', '{transaction_type}', '{currency}', {amount}, '{status}', '{repeat_type}', {group_id}, '{name}');

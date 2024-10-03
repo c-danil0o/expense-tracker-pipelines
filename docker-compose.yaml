@@ -3,7 +3,7 @@ version: "3.7"
 services:
 
   cadvisor:
-    container_name: cadvisor
+    container_name: cadvisor-mon
     image: gcr.io/cadvisor/cadvisor:v0.47.1
     network_mode: "host"
     ports:
@@ -21,7 +21,7 @@ services:
       - "/dev/kmsg"
 
   spring-boot:
-    build: .
+    build: ./tracker/
     restart: always
     ports:
       - 8085:8080
@@ -43,7 +43,7 @@ services:
   x-spark-common: &spark-common
     image: bitnami/spark:latest
     volumes:
-      - ./jobs:/opt/bitnami/spark/jobs
+      - ./airflow/jobs:/opt/bitnami/spark/jobs
     networks:
       - springapimysql-net
   spark-master:
@@ -87,7 +87,7 @@ services:
   x-airflow-common:
     &airflow-common
 #    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:latest}
-    build: ./../airflow/
+    build: ./airflow/
     environment:
       &airflow-common-env
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -97,10 +97,10 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     volumes:
-      - ./../airflow/dags:/opt/airflow/dags
-      - ./../airflow/jobs:/opt/airflow/jobs
-      - ./../airflow/logs:/opt/airflow/logs
-      - ./../airflow/plugins:/opt/airflow/plugins
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/jobs:/opt/airflow/jobs
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
     user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
     networks:
       - springapimysql-net
@@ -218,8 +218,8 @@ services:
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
     volumes:
       - ./kafka-connect:/kafka-connect
-      - ./connectors/mysql-connector-j-8.0.31.jar:/usr/share/java/kafka-connect-jdbc/mysql-connector-j-8.0.31.jar
-      - ./confluentinc-kafka-connect-jdbc-10.8.0:/usr/share/java/confluentinc-kafka-connect-jdbc-10.8.0
+      - ./drivers/mysql-connector-j-8.0.31.jar:/usr/share/java/kafka-connect-jdbc/mysql-connector-j-8.0.31.jar
+      - ./kafka/confluentinc-kafka-connect-jdbc-10.8.0:/usr/share/java/confluentinc-kafka-connect-jdbc-10.8.0
     depends_on:
       - broker
     networks:

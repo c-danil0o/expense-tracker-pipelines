@@ -13,7 +13,8 @@ The architecture of the system is divided into four major components:
 - **Airflow-Spark Batch Processing**: Manages batch processing pipelines and job orchestration.
 - **Data Warehouse**: Stores processed data using a three-layer Medallion architecture (Bronze, Silver, Gold).
 
-![System Architecture Diagram](path-to-your-diagram) 
+![System Architecture Diagram](diagrams/system-final.drawio.png)
+![Docker compose diagram](diagrams/docker-compose.png)
 
 ## Components
 
